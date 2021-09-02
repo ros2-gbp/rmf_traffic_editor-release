@@ -1,24 +1,28 @@
-# rmf_traffic_editor_assets
+[![](https://github.com/osrf/traffic_editor/workflows/ci/badge.svg)](https://github.com/osrf/traffic_editor/actions/workflows/ci.yaml)
+[![](https://github.com/osrf/traffic_editor/workflows/style/badge.svg)](https://github.com/osrf/traffic_editor/actions/workflows/style.yaml)
 
-Thumbnails and other static assets for the [rmf_traffic_editor](https://github.com/open-rmf/rmf_traffic_editor) GUI!
+# rmf_traffic\_editor
 
+Welcome!
 
+![](docs/rmf_traffic_editor_gui.png)
 
-## How To Use
+This repository has the following directories:
+ * `rmf_traffic_editor`: GUI for annotating floorplans to create traffic patterns
+ * `rmf_building_map_tools`: Python-based tools to use and manipulate the map files created by `rmf_traffic_editor`, such as:
+   * `building_map_server`:  a ROS 2 node to serve maps using `rmf_building_map_msgs`
+   * translators to simulators such as Gazebo
+   * translators to navigation packages such as `rmf_core` (e.g. `rmf_ros2`)
+   * scripts that handle downloading of gazebo models. `pit_crew`, `building_map_model_downloader`...
+ * `rmf_traffic_editor_assets`: Gazebo model thumbnails, in used by `traffic_editor` GUI
 
-This repository will be automatically cloned on build of `traffic_editor` into your `~/.traffic_editor` directory, which is the default place `traffic_editor` will look for thumbnail assets.
+# Installation
 
-**Updating**
+This repository is structured as a collection of ROS 2 packages and can be built using `colcon`.
+For full installation of RMF, please refer to [here](https://github.com/open-rmf/rmf).
 
-You can update your store of thumbnails either by rebuilding `traffic_editor` or manually invoking `git pull` in the directory.
+The `rmf_building_map_tools` package requires the following Python 3 dependencies to generate worlds:
 
-```shell
-cd ~/.traffic_editor/assets
-git pull
 ```
-
-
-
-## Artist Credits and Licenses
-
-Credits and licenses for each individual asset's creator can be found by downloading the model that corresponds to the asset's name on [Ignition Fuel](https://app.ignitionrobotics.org/fuel)!
+sudo apt install python3-shapely python3-yaml python3-requests
+```
