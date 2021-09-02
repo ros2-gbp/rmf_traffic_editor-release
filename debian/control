@@ -1,0 +1,12 @@
+Source: ros-galactic-rmf-building-map-tools
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <mquigley@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-galactic-rmf-building-map-msgs, ros-galactic-ros-workspace, python3-all, python3-setuptools
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-rmf-building-map-tools
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, python3-pyproj, python3-requests, python3-shapely, python3-yaml, ros-galactic-ament-index-python, ros-galactic-rclpy, ros-galactic-rmf-building-map-msgs, ros-galactic-std-msgs, ros-galactic-ros-workspace
+Description: RMF Building map tools
