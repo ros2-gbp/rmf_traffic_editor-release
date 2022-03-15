@@ -5,7 +5,7 @@ package_name = 'rmf_building_map_tools'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='1.5.0',
     packages=[
         'building_crowdsim',
         'building_crowdsim.navmesh',
@@ -15,6 +15,7 @@ setup(
         'building_map_server',
         'building_map_generator',
         'building_map_model_downloader',
+        'building_map_converter',
         'model_downloader',
         'pit_crew'],
     py_modules=[],
@@ -56,6 +57,8 @@ setup(
             'building_map_server.building_map_server:main',
             'building_map_generator = '
             'building_map_generator.building_map_generator:main',
+            'building_map_converter = '
+            'building_map_converter.building_map_converter:main',
             'building_map_model_downloader = '
             'building_map_model_downloader.building_map_model_downloader:main',
             'model_downloader = '

@@ -7,8 +7,10 @@ from pprint import pprint
 import argparse
 import logging
 import sys
+import shutil
 import os
 import yaml
+
 
 __all__ = [
     "download_models"
@@ -22,6 +24,14 @@ logger.setLevel(logging.INFO)
 
 g = Generator()
 
+
+class HTTPDownloadDeprecated(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        logger.warn('DEPRECATED: The Options -f and -m is no longer in use. \
+            Please remove these.')
+        setattr(namespace, self.dest, values)
+
+
 # Init overall parser
 parser = argparse.ArgumentParser(
     prog="building_map_model_downloader",
@@ -33,18 +43,17 @@ parser.add_argument("INPUT_YAML", type=str,
                     help="Input building.yaml file to process")
 parser.add_argument("-m", "--model-path", type=str,
                     default="~/.gazebo/models/",
+                    action=HTTPDownloadDeprecated,
                     help="Path to check models from and download models to. \
                         Redundant if using ignition fuel tools flag")
 parser.add_argument("-c", "--cache", type=str,
                     default="~/.pit_crew/model_cache.json",
                     help="Path to pit_crew model cache")
-parser.add_argument("-i", "--include", type=str,
-                    help="Search this directory first for models. "
-                         "If -f flag is specified, then directory must "
-                         "follow ignition gazebo directory structure.")
-parser.add_argument("-f", "--fuel-tools", action='store_true',
+parser.add_argument("-f", "--fuel-tools", action=HTTPDownloadDeprecated,
                     help="Use ignition fuel tools to download models instead "
-                         "of http")
+                         "of http", nargs=0)
+parser.add_argument("-i", "--include", type=str, default=None,
+                    help="Search this directory first for models.")
 parser.add_argument("-e", "--export-path", type=str, default=None,
                     help="Export model downloaded using ignition fuel tools "
                          "to a folder with classic gazebo directory structure."
@@ -71,15 +80,24 @@ def get_crowdsim_models(input_filename):
         return actor_names
 
 
+def export_downloaded_model(model_path, export_path):
+    if os.path.exists(export_path) or os.path.isdir(export_path):
+        logger.warning("%s already exists, skipping..." % (export_path))
+        return
+    logger.info("Exporting to %s..." % (export_path))
+    shutil.copytree(src=model_path, dst=export_path)
+
+
 def download_models(
         input_yaml,
-        model_path=None,
         cache=None,
         include=None,
-        fuel_tools=False,
         export_path=None):
     """Download models for a given input building yaml."""
     # Construct model set
+
+    IGN_FUEL_MODEL_PATH = "~/.ignition/fuel/"
+
     model_set = set()
     stringent_dict = {}  # Dict to tighten download scope
 
@@ -101,27 +119,14 @@ def download_models(
             else:
                 model_set.add(model.model_name)
 
-    # If we are using ignition fuel tools to download the models
-    # and we do not need to parse them, it means the model directory follows
-    # the ignition gazebo directory structure
-    ign = fuel_tools
-    logging.info("\nUsing Ignition Fuel directory struture : %s\n" % (ign))
-    # Ignition fuel tools can only download to this folder, so we set the
-    # model path to it
-    if fuel_tools:
-        if export_path is not None:
-            model_path = export_path
-            ign = False
-        else:
-            model_path = "~/.ignition/fuel/"
-
     missing_models = pit_crew.get_missing_models(
         model_set,
-        model_path=model_path,
+        model_path=IGN_FUEL_MODEL_PATH,
         cache_file_path=cache,
         lower=True,
         priority_dir=include,
-        ign=ign
+        ign=True,
+        use_dir_as_name=True
     )
 
     logger.info("\n== REQUESTED MODEL REPORT ==")
@@ -151,27 +156,38 @@ def download_models(
         logger.info("Downloading model %s / %s : %s" %
                     (key + 1, len(missing_downloadables), model_name))
 
-        if fuel_tools:
-            pit_crew.download_model_fuel_tools(
-                model_name, author_name,
-                sync_names=True, export_path=export_path)
-        else:
-            pit_crew.download_model(model_name, author_name, sync_names=True,
-                                    download_path=model_path, ign=ign)
+        pit_crew.download_model_fuel_tools(
+            model_name, author_name,
+            sync_names=True, export_path=export_path)
 
     if missing_models.get('missing', []):
         logger.warning("\nMissing models (not in local or Fuel):")
         pprint(missing_models['missing'])
+
+    if export_path is not None:
+        available_models = missing_models.get('available', [])
+        for model_name, paths in available_models:
+            if paths is None:
+                logger.warning("No path for exporting model %s, skipping..."
+                               % (model_name))
+                continue
+
+            if len(paths) > 1:
+                logger.warning("More than one path for model %s, selecting "
+                               "first path that was found, %s"
+                               % (model_name, paths[0]))
+
+            export_model_path = os.path.join(export_path, model_name)
+            export_model_path = os.path.expanduser(export_model_path)
+            export_downloaded_model(paths[0], export_model_path)
 
 
 def main():
     args = parser.parse_args()
     download_models(
         args.INPUT_YAML,
-        args.model_path,
         args.cache,
         args.include,
-        args.fuel_tools,
         args.export_path)
 
 
