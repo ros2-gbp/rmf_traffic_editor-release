@@ -38,7 +38,8 @@ using std::shared_ptr;
 
 
 Building::Building()
-: name("building")
+: name("building"),
+  coordinate_system(CoordinateSystem::ReferenceImage)
 {
 }
 
@@ -89,6 +90,10 @@ bool Building::load(const string& _filename)
   if (y["name"])
     name = y["name"].as<string>();
 
+  if (y["coordinate_system"])
+    coordinate_system.value =
+      CoordinateSystem::value_from_string(y["coordinate_system"].as<string>());
+
   if (y["reference_level_name"])
     reference_level_name = y["reference_level_name"].as<string>();
 
@@ -118,7 +123,7 @@ bool Building::load(const string& _filename)
   for (YAML::const_iterator it = yl.begin(); it != yl.end(); ++it)
   {
     Level level;
-    level.from_yaml(it->first.as<string>(), it->second);
+    level.from_yaml(it->first.as<string>(), it->second, coordinate_system);
     levels.push_back(level);
   }
 
@@ -129,7 +134,7 @@ bool Building::load(const string& _filename)
   // now that all images are loaded, we can calculate scale for annotated
   // measurement lanes
   for (auto& level : levels)
-    level.calculate_scale();
+    level.calculate_scale(coordinate_system);
 
   lifts.clear();
   if (y["lifts"] && y["lifts"].IsMap())
@@ -154,6 +159,17 @@ bool Building::load(const string& _filename)
     }
   }
 
+  if (y["parameters"] && y["parameters"].IsMap())
+  {
+    const YAML::Node& gp = y["parameters"];
+    for (YAML::const_iterator it = gp.begin(); it != gp.end(); ++it)
+    {
+      Param p;
+      p.from_yaml(it->second);
+      params[it->first.as<string>()] = p;
+    }
+  }
+
   calculate_all_transforms();
   return true;
 }
@@ -165,12 +181,14 @@ bool Building::save()
   YAML::Node y;
   y["name"] = name;
 
+  y["coordinate_system"] = coordinate_system.to_string();
+
   if (!reference_level_name.empty())
     y["reference_level_name"] = reference_level_name;
 
   y["levels"] = YAML::Node(YAML::NodeType::Map);
   for (const auto& level : levels)
-    y["levels"][level.name] = level.to_yaml();
+    y["levels"][level.name] = level.to_yaml(coordinate_system);
 
   y["lifts"] = YAML::Node(YAML::NodeType::Map);
   for (const auto& lift : lifts)
@@ -184,6 +202,14 @@ bool Building::save()
   y["graphs"] = YAML::Node(YAML::NodeType::Map);
   for (const auto& graph : graphs)
     y["graphs"][graph.idx] = graph.to_yaml();
+
+  if (!params.empty())
+  {
+    YAML::Node params_node(YAML::NodeType::Map);
+    for (const auto& param : params)
+      params_node[param.first] = param.second.to_yaml();
+    y["parameters"] = params_node;
+  }
 
   YAML::Emitter emitter;
   yaml_utils::write_node(y, emitter);
@@ -709,7 +735,13 @@ void Building::draw(
     return;
   }
 
-  levels[level_idx].draw(scene, editor_models, rendering_options, graphs);
+  levels[level_idx].draw(
+    scene,
+    editor_models,
+    rendering_options,
+    graphs,
+    coordinate_system);
+
   draw_lifts(scene, level_idx);
 }
 
