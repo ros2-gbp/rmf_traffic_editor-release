@@ -1,0 +1,53 @@
+ros-humble-rmf-traffic-editor-test-maps (1.5.0-2jammy) jammy; urgency=high
+
+
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Sun, 13 Mar 2022 08:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.4.0-2jammy) jammy; urgency=high
+
+  * adding maintainer for buildfarm notifications (#368 <https://github.com/open-rmf/rmf_traffic_editor/issues/368>)
+  * Contributors: Marco A. Gutiérrez
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Thu, 02 Sep 2021 07:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.3.0-2jammy) jammy; urgency=high
+
+  * rename building_map_tools (#310 <https://github.com/open-rmf/rmf_traffic_editor/issues/310>)
+  * Rename packages and delete moved packages (#308 <https://github.com/open-rmf/rmf_traffic_editor/issues/308>)
+  * Contributors: Geoffrey Biggs, youliang
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Fri, 14 May 2021 07:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.2.0-2jammy) jammy; urgency=high
+
+  * Add first pass of quality declarations for all packages (#235 <https://github.com/osrf/traffic_editor/issues/235>)
+  * Contributors: Geoffrey Biggs, Marco A. Gutiérre
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Tue, 05 Jan 2021 08:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.1.0-2jammy) jammy; urgency=high
+
+  * Move message call outside of custom command cal #184 <https://github.com/osrf/traffic_editor/issues/184>
+  * Fix/separate model download #183 <https://github.com/osrf/traffic_editor/issues/183>
+  * Using custom commands within if condition due to required OUTPUT or TARGET cmake variable
+  * Invoking model downloading with a separate custom command
+  * Fixing build dependency (#172 <https://github.com/osrf/traffic_editor/issues/172>)
+  * Contributors: Aaron Chong, Luca Della Vedova, Marco A. Gutiérrez
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Thu, 24 Sep 2020 07:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.0.0-2jammy) jammy; urgency=high
+
+  * merging master
+  * Merge pull request #132 <https://github.com/osrf/traffic_editor/issues/132> from methylDragon/ch3/author-namespaced-thumbnails
+    Support Author-namedspaced Thumbnails and Revamp building_map_generator
+  * Fix build and import bug
+  * Merge pull request #100 <https://github.com/osrf/traffic_editor/issues/100> from osrf/double_swing_doors_directions
+    branch on double swing door direction for sim generation
+  * branch on double swing door direction for sim generation
+  * Contributors: Aaron Chong, Morgan Quigley, methylDragon
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Mon, 22 Jun 2020 07:00:00 -0000
+
+
