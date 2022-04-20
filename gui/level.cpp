@@ -44,7 +44,8 @@ Level::~Level()
 
 bool Level::from_yaml(
   const std::string& _name,
-  const YAML::Node& _data)
+  const YAML::Node& _data,
+  const CoordinateSystem& coordinate_system)
 {
   printf("parsing level [%s]\n", _name.c_str());
   name = _name;
@@ -67,7 +68,7 @@ bool Level::from_yaml(
   {
     x_meters = _data["x_meters"].as<double>();
     y_meters = _data["y_meters"].as<double>();
-    drawing_meters_per_pixel = 0.05;  // something reasonable
+    drawing_meters_per_pixel = coordinate_system.default_scale();
     drawing_width = x_meters / drawing_meters_per_pixel;
     drawing_height = y_meters / drawing_meters_per_pixel;
   }
@@ -75,12 +76,21 @@ bool Level::from_yaml(
   {
     x_meters = 100.0;
     y_meters = 100.0;
-    drawing_meters_per_pixel = 0.05;
+    drawing_meters_per_pixel = coordinate_system.default_scale();
     drawing_width = x_meters / drawing_meters_per_pixel;
     drawing_height = y_meters / drawing_meters_per_pixel;
   }
 
-  parse_vertices(_data);
+  if (_data["vertices"] && _data["vertices"].IsSequence())
+  {
+    const YAML::Node& pts = _data["vertices"];
+    for (YAML::const_iterator it = pts.begin(); it != pts.end(); ++it)
+    {
+      Vertex v;
+      v.from_yaml(*it, coordinate_system);
+      vertices.push_back(v);
+    }
+  }
 
   if (_data["fiducials"] && _data["fiducials"].IsSequence())
   {
@@ -115,11 +125,6 @@ bool Level::from_yaml(
     }
   }
 
-  if (_data["flattened_x_offset"])
-    flattened_x_offset = _data["flattened_x_offset"].as<double>();
-  if (_data["flattened_y_offset"])
-    flattened_y_offset = _data["flattened_y_offset"].as<double>();
-
   load_yaml_edge_sequence(_data, "lanes", Edge::LANE);
   load_yaml_edge_sequence(_data, "walls", Edge::WALL);
   load_yaml_edge_sequence(_data, "measurements", Edge::MEAS);
@@ -132,7 +137,7 @@ bool Level::from_yaml(
     for (YAML::const_iterator it = ys.begin(); it != ys.end(); ++it)
     {
       Model m;
-      m.from_yaml(*it, this->name);
+      m.from_yaml(*it, this->name, coordinate_system);
       models.push_back(m);
     }
   }
@@ -168,7 +173,7 @@ bool Level::from_yaml(
     for (YAML::const_iterator it = yl.begin(); it != yl.end(); ++it)
     {
       Layer layer;
-      layer.from_yaml(it->first.as<string>(), it->second);
+      layer.from_yaml(it->first.as<string>(), it->second, coordinate_system);
       layers.push_back(layer);
     }
   }
@@ -204,7 +209,7 @@ bool Level::load_drawing()
   return true;
 }
 
-YAML::Node Level::to_yaml() const
+YAML::Node Level::to_yaml(const CoordinateSystem& coordinate_system) const
 {
   YAML::Node y;
   if (!drawing_filename.empty())
@@ -219,11 +224,9 @@ YAML::Node Level::to_yaml() const
     y["y_meters"] = y_meters;
   }
   y["elevation"] = elevation;
-  y["flattened_x_offset"] = flattened_x_offset;
-  y["flattened_y_offset"] = flattened_y_offset;
 
   for (const auto& v : vertices)
-    y["vertices"].push_back(v.to_yaml());
+    y["vertices"].push_back(v.to_yaml(coordinate_system));
 
   for (const auto& feature : floorplan_features)
     y["features"].push_back(feature.to_yaml());
@@ -264,7 +267,7 @@ YAML::Node Level::to_yaml() const
   }
 
   for (const auto& model : models)
-    y["models"].push_back(model.to_yaml());
+    y["models"].push_back(model.to_yaml(coordinate_system));
 
   for (const auto& polygon : polygons)
   {
@@ -285,7 +288,7 @@ YAML::Node Level::to_yaml() const
 
   y["layers"] = YAML::Node(YAML::NodeType::Map);
   for (const auto& layer : layers)
-    y["layers"][layer.name] = layer.to_yaml();
+    y["layers"][layer.name] = layer.to_yaml(coordinate_system);
 
   return y;
 }
@@ -349,6 +352,15 @@ bool Level::can_delete_current_selection()
   }
   if (vertex_used)
     return false;// don't try to delete a vertex used in a shape
+
+  /// check if this is a lift_cabin waypoint
+  const auto v = vertices[selected_vertex_idx];
+  auto it = v.params.find("lift_cabin");
+  if ((it != v.params.end()))
+  {
+    printf("This waypoint is used by a lift cabin!!");
+    return false;
+  }
 
   return true;
 }
@@ -575,7 +587,7 @@ void Level::get_selected_items(
   }
 }
 
-void Level::calculate_scale()
+void Level::calculate_scale(const CoordinateSystem& coordinate_system)
 {
   // for now, just calculate the mean of the scale estimates
   double scale_sum = 0.0;
@@ -603,7 +615,7 @@ void Level::calculate_scale()
       scale_count, drawing_meters_per_pixel);
   }
   else
-    drawing_meters_per_pixel = 0.05;// default to something reasonable
+    drawing_meters_per_pixel = coordinate_system.default_scale();
 
   if (drawing_width && drawing_height && drawing_meters_per_pixel > 0.0)
   {
@@ -649,24 +661,22 @@ void Level::draw_lane(
     lane_width_meters = graph_default_width;
 
   const double lane_pen_width = lane_width_meters / drawing_meters_per_pixel;
-
-  const QPen arrow_pen(
-    QBrush(QColor::fromRgbF(0.0, 0.0, 0.0, 0.5)),
-    lane_pen_width / 8);
-
-  // dimensions for the direction indicators along this path
-  const double arrow_w = lane_pen_width / 2.5;  // width of arrowheads
-  const double arrow_l = lane_pen_width / 2.5;  // length of arrowheads
-  const double arrow_spacing = lane_pen_width / 2.0;
-
   const double norm_x = dx / len;
   const double norm_y = dy / len;
 
   // only draw arrows if it's a unidirectional lane. We used to draw
   // arrows in both directions for bidirectional, but it was messy.
-
   if (!edge.is_bidirectional())
   {
+    const QPen arrow_pen(
+      QBrush(QColor::fromRgbF(0.0, 0.0, 0.0, 0.5)),
+      lane_pen_width / 8);
+
+    // dimensions for the direction indicators along this path
+    const double arrow_w = lane_pen_width / 2.5;  // width of arrowheads
+    const double arrow_l = lane_pen_width / 2.5;  // length of arrowheads
+    const double arrow_spacing = lane_pen_width * 4.0;
+
     for (double d = 0.0; d < len; d += arrow_spacing)
     {
       // first calculate the center vertex of this arrowhead
@@ -1091,32 +1101,42 @@ void Level::draw(
   QGraphicsScene* scene,
   vector<EditorModel>& editor_models,
   const RenderingOptions& rendering_options,
-  const vector<Graph>& graphs)
+  const vector<Graph>& graphs,
+  const CoordinateSystem& coordinate_system)
 {
-  if (drawing_filename.size() && _drawing_visible)
+  printf("Level::draw()\n");
+  vertex_radius = 0.1;
+
+  if (!coordinate_system.is_global())
   {
-    const double extra_scroll_area_width = 1.0 * drawing_width;
-    const double extra_scroll_area_height = 1.0 * drawing_height;
-    scene->setSceneRect(
-      QRectF(
-        -extra_scroll_area_width,
-        -extra_scroll_area_height,
-        drawing_width + 2 * extra_scroll_area_width,
-        drawing_height + 2 * extra_scroll_area_height));
-    scene->addPixmap(floorplan_pixmap);
-  }
-  else
-  {
-    const double w = x_meters / drawing_meters_per_pixel;
-    const double h = y_meters / drawing_meters_per_pixel;
-    scene->setSceneRect(QRectF(0, 0, w, h));
-    scene->addRect(0, 0, w, h, QPen(), Qt::white);
+    // If we're using an image-defined coordinate system, we should
+    // adjust the SceneRect to match the reference image, so the
+    // scrollbar range makes sense for this level.
+    if (drawing_filename.size() && _drawing_visible)
+    {
+      const double extra_scroll_area_width = 1.0 * drawing_width;
+      const double extra_scroll_area_height = 1.0 * drawing_height;
+      scene->setSceneRect(
+        QRectF(
+          -extra_scroll_area_width,
+          -extra_scroll_area_height,
+          drawing_width + 2 * extra_scroll_area_width,
+          drawing_height + 2 * extra_scroll_area_height));
+      scene->addPixmap(floorplan_pixmap);
+    }
+    else
+    {
+      const double w = x_meters / drawing_meters_per_pixel;
+      const double h = y_meters / drawing_meters_per_pixel;
+      scene->setSceneRect(QRectF(0, 0, w, h));
+      scene->addRect(0, 0, w, h, Qt::NoPen, Qt::white);
+    }
   }
 
   draw_polygons(scene);
 
   for (auto& layer : layers)
-    layer.draw(scene, drawing_meters_per_pixel);
+    layer.draw(scene, drawing_meters_per_pixel, coordinate_system);
 
   if (rendering_options.show_models)
   {
@@ -1161,7 +1181,8 @@ void Level::draw(
     v.draw(
       scene,
       vertex_radius / drawing_meters_per_pixel,
-      vertex_name_font);
+      vertex_name_font,
+      coordinate_system);
 
   for (const auto& f : fiducials)
     f.draw(scene, drawing_meters_per_pixel);
@@ -1466,21 +1487,6 @@ Polygon::EdgeDragPolygon Level::polygon_edge_drag_press(
   edp.polygon = QPolygonF(polygon_vertices);
 
   return edp;
-}
-
-bool Level::parse_vertices(const YAML::Node& _data)
-{
-  if (_data["vertices"] && _data["vertices"].IsSequence())
-  {
-    const YAML::Node& pts = _data["vertices"];
-    for (YAML::const_iterator it = pts.begin(); it != pts.end(); ++it)
-    {
-      Vertex v;
-      v.from_yaml(*it);
-      vertices.push_back(v);
-    }
-  }
-  return true;
 }
 
 void Level::add_vertex(const double x, const double y)
@@ -1840,6 +1846,8 @@ void Level::mouse_select_press(
   const RenderingOptions& rendering_options,
   const Qt::KeyboardModifiers& modifiers)
 {
+  printf("Level::mouse_select_press(%.3f, %.3f)\n", x, y);
+
   if (!(modifiers & Qt::ShiftModifier))
     clear_selection();
 
@@ -2062,7 +2070,8 @@ void Level::set_selected_line_item(
   const double x2 = line_item->line().x2();
   const double y2 = line_item->line().y2();
 
-
+  double min_edge_dist = 1e9;
+  Edge* min_edge = nullptr;
   // find if any of our lanes match those vertices
   for (auto& edge : edges)
   {
@@ -2081,12 +2090,19 @@ void Level::set_selected_line_item(
     const double v1_dist = std::sqrt(dx1*dx1 + dy1*dy1);
     const double v2_dist = std::sqrt(dx2*dx2 + dy2*dy2);
 
-    const double thresh = 10.0;  // it should be really tiny if it matches
-    if (v1_dist < thresh && v2_dist < thresh)
+    const double max_dist = (v1_dist > v2_dist ? v1_dist : v2_dist);
+    if (max_dist < min_edge_dist)
     {
-      edge.selected = true;
-      return;  // stop after first one is found, don't select multiple
+      min_edge_dist = max_dist;
+      min_edge = &edge;
     }
+  }
+
+  const double thresh = 10.0;  // should be really tiny if it matches
+  if (min_edge_dist < thresh && min_edge != nullptr)
+  {
+    min_edge->selected = true;
+    return;
   }
 
   // see if the constraint index is stored in the QGraphicsItem
