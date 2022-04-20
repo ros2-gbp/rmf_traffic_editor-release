@@ -1,0 +1,12 @@
+Source: ros-rolling-rmf-building-map-tools
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <mquigley@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest, ros-rolling-rmf-building-map-msgs, ros-rolling-ros-workspace, python3-all, python3-setuptools
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-rmf-building-map-tools
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, libyaml-cpp-dev, python3-fiona, python3-pyproj, python3-requests, python3-rtree, python3-shapely, python3-yaml, ros-rolling-ament-index-python, ros-rolling-rclpy, ros-rolling-rmf-building-map-msgs, ros-rolling-rmf-site-map-msgs, ros-rolling-std-msgs, sqlite3, ros-rolling-ros-workspace
+Description: RMF Building map tools
