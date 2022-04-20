@@ -26,6 +26,7 @@
 
 #include <QColor>
 
+#include "coordinate_system.h"
 #include "param.h"
 
 class QGraphicsScene;
@@ -46,15 +47,19 @@ public:
   Vertex();
   Vertex(double _x, double _y, const std::string& _name = std::string());
 
-  void from_yaml(const YAML::Node& data);
-  YAML::Node to_yaml() const;
+  void from_yaml(
+    const YAML::Node& data,
+    const CoordinateSystem& coordinate_system);
+
+  YAML::Node to_yaml(const CoordinateSystem& coordinate_system) const;
 
   void set_param(const std::string& name, const std::string& value);
 
   void draw(
     QGraphicsScene* scene,
     const double radius,
-    const QFont& font) const;
+    const QFont& font,
+    const CoordinateSystem& coordinate_system) const;
 
   bool is_parking_point() const;
   bool is_holding_point() const;
@@ -63,6 +68,7 @@ public:
 
   std::string dropoff_ingestor() const;
   std::string pickup_dispenser() const;
+  std::string lift_cabin() const;
 
 
   ////////////////////////////////////////////////////////////
