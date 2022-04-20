@@ -54,12 +54,30 @@ Vertex::Vertex(double _x, double _y, const string& _name)
   uuid = QUuid::createUuid();
 }
 
-void Vertex::from_yaml(const YAML::Node& data)
+void Vertex::from_yaml(
+  const YAML::Node& data,
+  const CoordinateSystem& coordinate_system)
 {
   if (!data.IsSequence())
     throw std::runtime_error("Vertex::from_yaml expected a sequence");
-  x = data[0].as<double>();
-  y = data[1].as<double>();
+
+  if (!coordinate_system.is_global())
+  {
+    x = data[0].as<double>();
+    y = data[1].as<double>();
+  }
+  else
+  {
+    CoordinateSystem::WGS84Point wgs84_point;
+    wgs84_point.lon = data[0].as<double>();
+    wgs84_point.lat = data[1].as<double>();
+
+    CoordinateSystem::ProjectedPoint p =
+      coordinate_system.to_epsg3857(wgs84_point);
+    x = p.x;
+    y = p.y;
+  }
+
   if (data.size() < 4)
     return;// todo: remove... intended only during format transition
   // skip the z-offset in data[2] for now
@@ -78,15 +96,25 @@ void Vertex::from_yaml(const YAML::Node& data)
   }
 }
 
-YAML::Node Vertex::to_yaml() const
+YAML::Node Vertex::to_yaml(const CoordinateSystem& coordinate_system) const
 {
-  // This is in image space. I think it's safe to say nobody is clicking
-  // with more than 1/1000 precision inside a single pixel.
-
   YAML::Node vertex_node;
   vertex_node.SetStyle(YAML::EmitterStyle::Flow);
-  vertex_node.push_back(std::round(x * 1000.0) / 1000.0);
-  vertex_node.push_back(std::round(y * 1000.0) / 1000.0);
+
+  if (!coordinate_system.is_global())
+  {
+    // in either image or cartesian-meters coordinate spaces, we're
+    // fine with rounding to 3 decimal places
+    vertex_node.push_back(std::round(x * 1000.0) / 1000.0);
+    vertex_node.push_back(std::round(y * 1000.0) / 1000.0);
+  }
+  else
+  {
+    // convert back to WGS84 and save with as many decimal places as possible
+    CoordinateSystem::WGS84Point p = coordinate_system.to_wgs84({x, y});
+    vertex_node.push_back(p.lon);
+    vertex_node.push_back(p.lat);
+  }
   vertex_node.push_back(0.0);  // placeholder for Z offsets in the future
   vertex_node.push_back(name);
 
@@ -103,7 +131,8 @@ YAML::Node Vertex::to_yaml() const
 void Vertex::draw(
   QGraphicsScene* scene,
   const double radius,
-  const QFont& font) const
+  const QFont& font,
+  const CoordinateSystem& coordinate_system) const
 {
   QPen vertex_pen(Qt::black);
   vertex_pen.setWidthF(radius / 2.0);
@@ -148,6 +177,8 @@ void Vertex::draw(
     pixmap_item->setPos(
       x + icon_ring_radius * cos(icon_bearing),
       y - icon_ring_radius * sin(icon_bearing));
+    if (!coordinate_system.is_y_flipped())
+      pixmap_item->setTransform(pixmap_item->transform().scale(1, -1));
     pixmap_item->setToolTip("This vertex is a holding point");
   }
 
@@ -165,6 +196,8 @@ void Vertex::draw(
     pixmap_item->setPos(
       x + icon_ring_radius * cos(icon_bearing),
       y - icon_ring_radius * sin(icon_bearing));
+    if (!coordinate_system.is_y_flipped())
+      pixmap_item->setTransform(pixmap_item->transform().scale(1, -1));
     pixmap_item->setToolTip("This vertex is a parking point");
 
     /*
@@ -205,6 +238,8 @@ void Vertex::draw(
     pixmap_item->setPos(
       x + icon_ring_radius * cos(icon_bearing),
       y - icon_ring_radius * sin(icon_bearing));
+    if (!coordinate_system.is_y_flipped())
+      pixmap_item->setTransform(pixmap_item->transform().scale(1, -1));
     pixmap_item->setToolTip("This vertex is a charger");
   }
 
@@ -218,6 +253,8 @@ void Vertex::draw(
     icon_name = ":icons/dropoff.svg";
   else if (is_cleaning_zone())
     icon_name = ":icons/clean.svg";
+  else if (!lift_cabin().empty())
+    icon_name = ":icons/lift.svg";
 
   if (!icon_name.empty())
   {
@@ -234,6 +271,8 @@ void Vertex::draw(
     pixmap_item->setPos(
       x + icon_ring_radius * cos(icon_bearing),
       y - icon_ring_radius * sin(icon_bearing));
+    if (!coordinate_system.is_y_flipped())
+      pixmap_item->setTransform(pixmap_item->transform().scale(1, -1));
     pixmap_item->setToolTip(("Vertex is " + icon_name).c_str());
   }
 
@@ -243,7 +282,19 @@ void Vertex::draw(
       QString::fromStdString(name),
       font);
     text_item->setBrush(selected ? selected_color : vertex_color);
-    text_item->setPos(x, y - 1 + radius);
+
+    if (coordinate_system.is_y_flipped())
+    {
+      // default screen coordinates: +Y=down. Nothing special needed.
+      text_item->setPos(x, y - 1 + radius);
+    }
+    else
+    {
+      // if Y is not flipped, this means we have +Y=up, so we have to
+      // flip the text, because Qt's default is for +Y=down screen coords
+      text_item->setTransform(QTransform::fromScale(1.0, -1.0));
+      text_item->setPos(x, y + 1 + radius);
+    }
   }
 }
 
@@ -306,6 +357,19 @@ std::string Vertex::dropoff_ingestor() const
 std::string Vertex::pickup_dispenser() const
 {
   const auto it = params.find("pickup_dispenser");
+  if (it == params.end())
+    return "";
+
+  return it->second.value_string;
+}
+
+std::string Vertex::lift_cabin() const
+{
+  /// Note: currently lift_cabin vertex is auto-generated when adding
+  /// a lift on traffic editor. Therefore lift cabin param is part of the
+  /// 'allowed_params' above. For now, the param 'lift_cabin' doesn't
+  /// serve any purpose in rmf building map generation and rmf graph.
+  const auto it = params.find("lift_cabin");
   if (it == params.end())
     return "";
 
