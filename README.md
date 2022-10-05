@@ -1,3 +1,30 @@
+## rmf_traffic_editor (humble) - 1.6.0-1
+
+The packages in the `rmf_traffic_editor` repository were released into the `humble` distro by running `/usr/bin/bloom-release --ros-distro humble --track humble -e rmf_traffic_editor` on `Wed, 05 Oct 2022 08:38:01 -0000`
+
+These packages were released:
+- `rmf_building_map_tools`
+- `rmf_traffic_editor`
+- `rmf_traffic_editor_assets`
+- `rmf_traffic_editor_test_maps`
+
+Version of package(s) in repository `rmf_traffic_editor`:
+
+- upstream repository: https://github.com/open-rmf/rmf_traffic_editor.git
+- release repository: https://github.com/ros2-gbp/rmf_traffic_editor-release.git
+- rosdistro version: `1.5.0-2`
+- old version: `1.5.0-2`
+- new version: `1.6.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.11.2`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.22.1`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## rmf_traffic_editor (rolling) - 1.6.0-1
 
 The packages in the `rmf_traffic_editor` repository were released into the `rolling` distro by running `/usr/bin/bloom-release --ros-distro rolling --track rolling -e rmf_traffic_editor` on `Wed, 05 Oct 2022 08:30:36 -0000`
