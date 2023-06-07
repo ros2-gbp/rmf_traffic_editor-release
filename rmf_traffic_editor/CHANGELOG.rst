@@ -2,9 +2,9 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.6.1 (2023-06-05)
+1.7.0 (2023-06-06)
 ------------------
-* Switch changelogs to rst format.
+* Switch to rst changelogs (`#464 <https://github.com/open-rmf/rmf_traffic_editor/pull/464>`_)
 * Contributors: Yadunund
 
 1.6.0 (2022-10-05)
