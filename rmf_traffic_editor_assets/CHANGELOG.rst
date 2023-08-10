@@ -2,6 +2,9 @@
 Changelog for package rmf\_traffic\_editor\_assets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.1 (2023-08-10)
+------------------
+
 1.7.0 (2023-06-06)
 ------------------
 * Switch to rst changelogs (`#464 <https://github.com/open-rmf/rmf_traffic_editor/pull/464>`_)
