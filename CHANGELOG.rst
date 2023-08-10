@@ -2,6 +2,9 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2023-08-10)
+------------------
+
 1.6.1 (2023-06-05)
 ------------------
 * Switch changelogs to rst format.
