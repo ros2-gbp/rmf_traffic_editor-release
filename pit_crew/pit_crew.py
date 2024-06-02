@@ -23,7 +23,7 @@ Features:
 
 See Also:
     pit_crew is very much like a Gazebo supporting variant of:
-    https://github.com/ignitionrobotics/ign-fuel-tools
+    https://github.com/gazebosim/gz-fuel-tools
 
     In other words, pit_crew is not related to ign-fuel-tools, but fills the
     same feature-niche, except for Gazebo instead of Ignition Gazebo.
@@ -504,7 +504,7 @@ def download_model(model_name, author_name, version="tip",
             "tip", which will download the latest model.
         download_path (str, optional): The root directory for downloading
             and unzipping the models into. Defaults to None. If None, function
-            will use "~/.ignition/fuel/fuel.ignitionrobotics.org" or
+            will use "~/.ignition/fuel/fuel.gazebosim.org" or
             "~/.gazebo/models" depending on the state of the ign argument.
         sync_names (bool, optional): Change downloaded model.sdf model name to
             match folder name. Defaults to False.
@@ -523,7 +523,7 @@ def download_model(model_name, author_name, version="tip",
         if download_path is None:
             if ign:
                 download_path = os.path.expanduser(
-                    "~/.ignition/fuel/fuel.ignitionrobotics.org"
+                    "~/.ignition/fuel/fuel.gazebosim.org"
                 )
             else:
                 download_path = os.path.expanduser("~/.gazebo/models")
@@ -538,7 +538,7 @@ def download_model(model_name, author_name, version="tip",
             logger.warning("Download path does not exist! Created: %s"
                            % download_path)
 
-        url_base = "https://fuel.ignitionrobotics.org/1.0"
+        url_base = "https://fuel.gazebosim.org/1.0"
         metadata = requests.get("%s/%s/models/%s/%s/%s"
                                 % (url_base, author_name,
                                    model_name, version, model_name))
@@ -626,15 +626,21 @@ def download_model_fuel_tools(model_name, author_name,
         # Currently, ignition fuel download can only download to this folder.
         # Fuel tools creates this folder if it does not yet exist
         download_path = os.path.expanduser(
-            "~/.ignition/fuel/fuel.ignitionrobotics.org"
+            "~/.ignition/fuel/fuel.gazebosim.org"
         )
         # Command line
         url_model_name = parse.quote(model_name)
-        full_url = ("https://fuel.ignitionrobotics.org/1.0" +
+        full_url = ("https://fuel.gazebosim.org/1.0" +
                     '/' + author_name + '/models' + '/' + url_model_name)
         full_command = full_command = ("ign fuel download -u "
                                        + full_url + " -v 4")
         subprocess.call([full_command], shell=True)
+        child = subprocess.Popen([full_command], shell=True,
+                                 stdout=subprocess.PIPE)
+        streamdata = child.communicate()[0]
+        if child.returncode != 0:
+            logger.error("Could not download model '%s'!" % (model_name))
+            return False
 
         extract_path_base = os.path.join(
             download_path,
@@ -822,14 +828,14 @@ def build_and_update_cache(cache_file_path=None, write_to_cache=True,
             old_cache = {'model_cache': set(), 'fuel_cache': []}
             logger.info("Cache not found! Rebuilding cache...")
 
-    url_base = "https://fuel.ignitionrobotics.org/1.0/models"
+    url_base = "https://fuel.gazebosim.org/1.0/models"
     status = 200
     break_flag = False
     page = 1
     new_cache_count = 0
 
     logger.info("Topping up Fuel (updating cache) from:"
-                " https://fuel.ignitionrobotics.org/1.0/models")
+                " https://fuel.gazebosim.org/1.0/models")
 
     # RFE: Doing this asynchronously will significantly speed this up.
     # Any solution must guarantee:
@@ -838,7 +844,7 @@ def build_and_update_cache(cache_file_path=None, write_to_cache=True,
     while status == 200 and not break_flag:
         logger.info("Fetching page: %d" % page)
 
-        resp = requests.get("%s?page=%d" % (url_base, page))
+        resp = requests.get("%s?page=%d&per_page=100" % (url_base, page))
         status = resp.status_code
         page += 1
 
@@ -848,7 +854,12 @@ def build_and_update_cache(cache_file_path=None, write_to_cache=True,
                 author_name = model.get("owner", "")
 
                 # If a cached model was found, halt
-                if (model_name, author_name) in old_cache['model_cache']:
+                if (
+                    (model_name, author_name) in old_cache['model_cache']
+                    # this particular model is duplicated in fuel,
+                    # causing the cache to break early
+                    and model_name != "ur5_rg2" and author_name != "anni"
+                ):
                     logger.info("Cached model found! "
                                 "Halting Fuel traversal...")
                     break_flag = True

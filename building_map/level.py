@@ -211,6 +211,10 @@ class Level:
                 ParamValue.DOUBLE,
                 props.get('speed_limit', 0.0)
             ])
+            edge.params['mutex'] = ParamValue([
+                ParamValue.STRING,
+                props.get('mutex', "")
+            ])
             self.lanes.append(edge)
         else:
             raise ValueError('unknown edge type!')
@@ -252,12 +256,12 @@ class Level:
             if 'spawn_robot_type' in vertex.params:
                 self.generate_robot_at_vertex_idx(vertex_idx, world_ele)
 
-    def generate_doors(self, world_ele, options):
+    def generate_doors(self, world_ele):
         for door_edge in self.doors:
             door_edge.calc_statistics(self.transformed_vertices)
-            self.generate_door(door_edge, world_ele, options)
+            self.generate_door(door_edge, world_ele)
 
-    def generate_door(self, door_edge, world_ele, options):
+    def generate_door(self, door_edge, world_ele):
         door_name = door_edge.params['name'].value
         door_type = door_edge.params['type'].value
         print(f'generate door name={door_name} type={door_type}')
@@ -275,7 +279,7 @@ class Level:
             print(f'door type {door_type} not yet implemented')
 
         if door:
-            door.generate(world_ele, options)
+            door.generate(world_ele)
 
     def generate_robot_at_vertex_idx(self, vertex_idx, world_ele):
         vertex = self.transformed_vertices[vertex_idx]
@@ -486,6 +490,10 @@ class Level:
                     l.params['speed_limit'].value > 0.0:
                 p['speed_limit'] = l.params['speed_limit'].value
 
+            if 'mutex' in l.params and \
+                    l.params['mutex'].value:
+                p['mutex'] = l.params['mutex'].value
+
             if 'demo_mock_floor_name' in l.params and \
                     l.params['demo_mock_floor_name'].value:
                 p['demo_mock_floor_name'] = \
@@ -496,16 +504,12 @@ class Level:
                 p['demo_mock_lift_name'] = \
                     l.params['demo_mock_lift_name'].value
 
-            dock_name = None
-            dock_at_end = True
+            beginning_dock = None
+            end_dock = None
             if 'dock_name' in v2.params:  # lane segment will end at dock
-                dock_name = v2.params['dock_name'].value
-            elif 'dock_name' in v1.params:
-                dock_name = v1.params['dock_name'].value
-                dock_at_end = False
-
-            if 'speed_limit' in l.params:
-                p['speed_limit'] = l.params['speed_limit'].value
+                end_dock = v2.params['dock_name'].value
+            if 'dock_name' in v1.params:  # lane segment begins at dock
+                beginning_dock = v1.params['dock_name'].value
 
             if always_unidirectional and l.is_bidirectional():
                 # now flip things around and make the second link
@@ -513,19 +517,14 @@ class Level:
                 backward_params = copy.deepcopy(p)
 
                 # we need to create two unidirectional lane segments
-                # todo: clean up this logic, it's overly spaghetti
-                if dock_name:
-                    if dock_at_end:
-                        forward_params['dock_name'] = dock_name
-                    else:
-                        forward_params['undock_name'] = dock_name
-                nav_data['lanes'].append([start_idx, end_idx, forward_params])
+                if end_dock:
+                    forward_params['dock_name'] = end_dock
+                    backward_params['undock_name'] = end_dock
+                if beginning_dock:
+                    forward_params['undock_name'] = beginning_dock
+                    backward_params['dock_name'] = beginning_dock
 
-                if dock_name:
-                    if dock_at_end:
-                        backward_params['undock_name'] = dock_name
-                    else:
-                        backward_params['dock_name'] = dock_name
+                nav_data['lanes'].append([start_idx, end_idx, forward_params])
 
                 if l.orientation():
                     backward_params['orientation_constraint'] = \
@@ -534,8 +533,10 @@ class Level:
             else:
                 # ensure the directionality parameter is set
                 p['is_bidirectional'] = l.is_bidirectional()
-                if dock_name:
-                    p['dock_name'] = dock_name
+                if end_dock:
+                    p['dock_name'] = end_dock
+                if beginning_dock:
+                    p['undock_name'] = beginning_dock
                 nav_data['lanes'].append([start_idx, end_idx, p])
 
         return nav_data
