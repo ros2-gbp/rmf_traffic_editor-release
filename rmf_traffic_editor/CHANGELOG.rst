@@ -2,12 +2,22 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.2 (2023-12-15)
+1.9.0 (2024-06-01)
+------------------
+* Fix buildfarm build of rmf_traffic_editor packages (`#495 <https://github.com/open-rmf/rmf_traffic_editor/pull/495>`_)
+* Harmonic release and ECS refactor (`#483 <https://github.com/open-rmf/rmf_traffic_editor/pull/483>`_)
+* Fix empty generate_crs in building yaml. (`#482 <https://github.com/open-rmf/rmf_traffic_editor/pull/482>`_)
+* Contributors: Luca Della Vedova, Grey, cwrx777
+
+1.8.2 (2023-12-15)
 ------------------
 * Merge radius property (`#480 <https://github.com/open-rmf/rmf_traffic_editor/pull/480>`_)
 * Mutex group property (`#477 <https://github.com/open-rmf/rmf_traffic_editor/pull/477>`_)
 
-1.7.1 (2023-08-10)
+1.8.1 (2023-08-10)
+------------------
+
+1.8.0 (2023-06-08)
 ------------------
 
 1.7.0 (2023-06-06)

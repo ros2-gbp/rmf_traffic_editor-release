@@ -2,15 +2,28 @@
 Changelog for package rmf\_building\_map\_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.2 (2023-12-15)
+1.9.0 (2024-06-01)
+------------------
+* Fix MultiPolygon not iterable (`#496 <https://github.com/open-rmf/rmf_traffic_editor/pull/496>`_)
+* Harmonic release and ECS refactor (`#483 <https://github.com/open-rmf/rmf_traffic_editor/pull/483>`_)
+* workaround fuel dup (`#490 <https://github.com/open-rmf/rmf_traffic_editor/pull/490>`_)
+* Add per_page arg to fuel pagination for pit_crew (`#491 <https://github.com/open-rmf/rmf_traffic_editor/pull/491>`_)
+* bugfix: specify coordiate_system when generating yaml for lift. (`#488 <https://github.com/open-rmf/rmf_traffic_editor/pull/488>`_)
+* Handle geometry collections (`#476 <https://github.com/open-rmf/rmf_traffic_editor/pull/476>`_)
+* Contributors: Arjo Chakravarty, Grey, Luca Della Vedova, Teo Koon Peng, Xiyu, cwrx777, methylDragon, Yadunund
+
+1.8.2 (2023-12-15)
 ------------------
 * Export door information to nav graphs (`#479 <https://github.com/open-rmf/rmf_traffic_editor/pull/479>`_)
 * Export lift information to nav graphs (`#478 <https://github.com/open-rmf/rmf_traffic_editor/pull/478>`_)
 
-1.7.1 (2023-08-10)
+1.8.1 (2023-08-10)
 ------------------
-* Fix gz classic model download (`#472 <https://github.com/open-rmf/rmf_traffic_editor/pull/472>`_)
+* Fix gz classic model download (`#470 <https://github.com/open-rmf/rmf_traffic_editor/pull/470>`_)
 * Contributors: Aaron Chong
+
+1.8.0 (2023-06-08)
+------------------
 
 1.7.0 (2023-06-06)
 ------------------
