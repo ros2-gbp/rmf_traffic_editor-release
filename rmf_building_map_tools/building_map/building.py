@@ -352,8 +352,6 @@ class Building:
             g = {}
             g['building_name'] = self.name
             g['levels'] = {}
-            g['lifts'] = {}
-            g['doors'] = {}
 
             if self.coordinate_system == CoordinateSystem.web_mercator:
                 g['crs_name'] = self.global_transform.crs_name
@@ -374,29 +372,19 @@ class Building:
                 g['levels'][level_name] = level_graph
                 if level_graph['lanes']:
                     empty = False
-
-                for door_edge in level.doors:
-                    door_edge.calc_statistics(level.transformed_vertices)
-                    g['doors'][door_edge.params['name'].value] = {
-                        'endpoints': [
-                            [door_edge.x1, door_edge.y1],
-                            [door_edge.x2, door_edge.y2]
-                        ],
-                        'map': level_name
-                    }
-
-            for lift_name, lift in self.lifts.items():
-                g['lifts'][lift_name] = {
-                    'position': [lift.x, lift.y, lift.yaw],
-                    'dims': [lift.width, lift.depth]
-                }
             if not empty:
                 nav_graphs[f'{i}'] = g
         return nav_graphs
 
-    def generate_sdf_world(self):
+    def generate_sdf_world(self, options):
         """ Return an etree of this Building in SDF starting from a template"""
-        template_name = 'gz_world.sdf'
+        print(f'generator options: {options}')
+        if 'gazebo' in options:
+            template_name = 'gz_world.sdf'
+        elif 'ignition' in options:
+            template_name = 'ign_world.sdf'
+        else:
+            raise RuntimeError("expected either gazebo or ignition in options")
 
         template_path = os.path.join(
             get_package_share_directory('rmf_building_map_tools'),
@@ -408,7 +396,7 @@ class Building:
 
         for level_name, level in self.levels.items():
             level.generate_sdf_models(world)  # todo: a better name
-            level.generate_doors(world)
+            level.generate_doors(world, options)
 
             level_include_ele = SubElement(world, 'include')
             level_model_name = f'{self.name}_{level_name}'
@@ -430,21 +418,21 @@ class Building:
                 print(f'[{lift_name}] is not serving any floor, ignoring.')
                 continue
             lift.generate_shaft_doors(world)
-            lift.generate_cabin(world)
+            lift.generate_cabin(world, options)
 
         charger_waypoints_ele = SubElement(
-            world,
-            'rmf_charger_waypoints',
-            {'name': 'charger_waypoints'})
+          world,
+          'rmf_charger_waypoints',
+          {'name': 'charger_waypoints'})
 
         for level_name, level in self.levels.items():
             for vertex in level.transformed_vertices:
                 if 'is_charger' in vertex.params:
                     SubElement(
-                        charger_waypoints_ele,
-                        'rmf_vertex',
-                        {'name': vertex.name, 'x': str(vertex.x),
-                         'y': str(vertex.y), 'level': level_name})
+                      charger_waypoints_ele,
+                      'rmf_vertex',
+                      {'name': vertex.name, 'x': str(vertex.x),
+                       'y': str(vertex.y), 'level': level_name})
 
         if self.coordinate_system == CoordinateSystem.web_mercator:
             (tx, ty) = self.global_transform.x, self.global_transform.y
@@ -481,14 +469,30 @@ class Building:
         else:
             camera_pose = f'{c[0]} {c[1]-20} 10 0 0.6 1.57'
         # add floor-toggle GUI plugin parameters
-        plugin_ele = gui_ele.find('.//plugin[@filename="MinimalScene"]')
-        camera_pose_ele = plugin_ele.find('camera_pose')
-        camera_pose_ele.text = camera_pose
+        if 'gazebo' in options:
+            camera_pose_ele = gui_ele.find('camera').find('pose')
+            camera_pose_ele.text = camera_pose
 
-        toggle_floors_ele = SubElement(
-            gui_ele,
-            'plugin',
-            {'name': 'toggle_floors', 'filename': 'toggle_floors'})
+            toggle_charge_ele = SubElement(
+                gui_ele,
+                'plugin',
+                {'name': 'toggle_charging',
+                 'filename': 'libtoggle_charging.so'})
+
+            toggle_floors_ele = SubElement(
+                gui_ele,
+                'plugin',
+                {'name': 'toggle_floors', 'filename': 'libtoggle_floors.so'})
+
+        elif 'ignition' in options:
+            plugin_ele = gui_ele.find('.//plugin[@filename="GzScene3D"]')
+            camera_pose_ele = plugin_ele.find('camera_pose')
+            camera_pose_ele.text = camera_pose
+
+            toggle_floors_ele = SubElement(
+                gui_ele,
+                'plugin',
+                {'name': 'toggle_floors', 'filename': 'toggle_floors'})
 
         for level_name, level in self.levels.items():
             floor_ele = SubElement(
@@ -704,8 +708,7 @@ class Building:
 
             d['lifts'] = {}
             for lift_name, lift in self.lifts.items():
-                d['lifts'][lift_name] = lift.to_yaml(
-                    self.coordinate_system)
+                d['lifts'][lift_name] = lift.to_yaml()
 
             yaml.dump(d, f)
 

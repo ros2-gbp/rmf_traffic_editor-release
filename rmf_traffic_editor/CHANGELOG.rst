@@ -2,30 +2,17 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.9.1 (2024-06-15)
+1.6.3 (2024-11-05)
+------------------
+* Fix reference file name being kept when loading new building (`#503 <https://github.com/open-rmf/rmf_traffic_editor/pull/503>`_)
+* Contributors: Luca Della Vedova
+
+1.6.2 (2023-08-10)
 ------------------
 
-1.9.0 (2024-06-01)
+1.6.1 (2023-06-05)
 ------------------
-* Fix buildfarm build of rmf_traffic_editor packages (`#495 <https://github.com/open-rmf/rmf_traffic_editor/pull/495>`_)
-* Harmonic release and ECS refactor (`#483 <https://github.com/open-rmf/rmf_traffic_editor/pull/483>`_)
-* Fix empty generate_crs in building yaml. (`#482 <https://github.com/open-rmf/rmf_traffic_editor/pull/482>`_)
-* Contributors: Luca Della Vedova, Grey, cwrx777
-
-1.8.2 (2023-12-15)
-------------------
-* Merge radius property (`#480 <https://github.com/open-rmf/rmf_traffic_editor/pull/480>`_)
-* Mutex group property (`#477 <https://github.com/open-rmf/rmf_traffic_editor/pull/477>`_)
-
-1.8.1 (2023-08-10)
-------------------
-
-1.8.0 (2023-06-08)
-------------------
-
-1.7.0 (2023-06-06)
-------------------
-* Switch to rst changelogs (`#464 <https://github.com/open-rmf/rmf_traffic_editor/pull/464>`_)
+* Switch changelogs to rst format.
 * Contributors: Yadunund
 
 1.6.0 (2022-10-05)

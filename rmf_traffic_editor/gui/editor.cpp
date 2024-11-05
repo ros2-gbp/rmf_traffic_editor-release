@@ -477,8 +477,7 @@ void Editor::load_model_names()
     try
     {
       share_dir =
-        ament_index_cpp::get_package_share_directory(
-        "rmf_traffic_editor_assets");
+        ament_index_cpp::get_package_share_directory("rmf_traffic_editor_assets");
 
       ament_index_cpp::get_resource("rmf_traffic_editor_assets",
         "assets",

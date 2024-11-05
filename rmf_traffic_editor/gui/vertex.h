@@ -22,7 +22,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <optional>
 #include <yaml-cpp/yaml.h>
 
 #include <QColor>
@@ -59,7 +58,6 @@ public:
   void draw(
     QGraphicsScene* scene,
     const double radius,
-    const double drawing_meters_per_pixel,
     const QFont& font,
     const CoordinateSystem& coordinate_system) const;
 
@@ -67,7 +65,6 @@ public:
   bool is_holding_point() const;
   bool is_cleaning_zone() const;
   bool is_charger() const;
-  std::optional<double> merge_radius() const;
 
   std::string dropoff_ingestor() const;
   std::string pickup_dispenser() const;

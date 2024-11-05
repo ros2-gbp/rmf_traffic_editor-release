@@ -50,8 +50,7 @@ void AgentProfileTab::list_item_in_cache()
   {
     auto current_profile = _cache[i];
     setItem(i, 0,
-      new QTableWidgetItem(QString::fromStdString(
-        current_profile.profile_name)));
+      new QTableWidgetItem(QString::fromStdString(current_profile.profile_name)));
     setItem(i, 1,
       new QTableWidgetItem(QString::number(
         static_cast<uint>(current_profile.profile_class))));

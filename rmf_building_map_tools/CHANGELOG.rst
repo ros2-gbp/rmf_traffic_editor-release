@@ -2,41 +2,25 @@
 Changelog for package rmf\_building\_map\_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.9.1 (2024-06-15)
+1.6.3 (2024-11-05)
 ------------------
+* backport pit crew fixes (`#500 <https://github.com/open-rmf/rmf_traffic_editor/issues/500>`_)
+* Contributors: methylDragon, Teo Koon Peng
 
-1.9.0 (2024-06-01)
+1.6.2 (2023-08-10)
 ------------------
-* Fix MultiPolygon not iterable (`#496 <https://github.com/open-rmf/rmf_traffic_editor/pull/496>`_)
-* Harmonic release and ECS refactor (`#483 <https://github.com/open-rmf/rmf_traffic_editor/pull/483>`_)
-* workaround fuel dup (`#490 <https://github.com/open-rmf/rmf_traffic_editor/pull/490>`_)
-* Add per_page arg to fuel pagination for pit_crew (`#491 <https://github.com/open-rmf/rmf_traffic_editor/pull/491>`_)
-* bugfix: specify coordiate_system when generating yaml for lift. (`#488 <https://github.com/open-rmf/rmf_traffic_editor/pull/488>`_)
-* Handle geometry collections (`#476 <https://github.com/open-rmf/rmf_traffic_editor/pull/476>`_)
-* Contributors: Arjo Chakravarty, Grey, Luca Della Vedova, Teo Koon Peng, Xiyu, cwrx777, methylDragon, Yadunund
-
-1.8.2 (2023-12-15)
-------------------
-* Export door information to nav graphs (`#479 <https://github.com/open-rmf/rmf_traffic_editor/pull/479>`_)
-* Export lift information to nav graphs (`#478 <https://github.com/open-rmf/rmf_traffic_editor/pull/478>`_)
-
-1.8.1 (2023-08-10)
-------------------
-* Fix gz classic model download (`#470 <https://github.com/open-rmf/rmf_traffic_editor/pull/470>`_)
+* Fix gz classic model download (`#471 <https://github.com/open-rmf/rmf_traffic_editor/pull/471>`_)
 * Contributors: Aaron Chong
 
-1.8.0 (2023-06-08)
+1.6.1 (2023-06-05)
 ------------------
-
-1.7.0 (2023-06-06)
-------------------
-* Switch to rst changelogs (`#464 <https://github.com/open-rmf/rmf_traffic_editor/pull/464>`_)
-* Add texture for white wall (`#463 <https://github.com/open-rmf/rmf_traffic_editor/pull/463>`_)
+* Switch changelogs to rst format.
+* Add texture for a white wall (`#463 <https://github.com/open-rmf/rmf_traffic_editor/pull/463>`_)
 * Fix navgraph generation for connected docking waypoints (`#452 <https://github.com/open-rmf/rmf_traffic_editor/pull/452>`_)
 * Added 5 retries for model downloading failure (`#455 <https://github.com/open-rmf/rmf_traffic_editor/pull/455>`_)
 * Migrate to using gzsim server url for fuel (`#454 <https://github.com/open-rmf/rmf_traffic_editor/pull/454>`_)
 * Exiting model downloader with non-zero exit code (`#453 <https://github.com/open-rmf/rmf_traffic_editor/pull/453>`_)
-* Contributors: Aaron Chong, Luca Della Vedova, Yadunund
+* Contributors: Aaron Chong, Esteban Martinena Guerrero, Luca Della Vedova, Yadu, Yadunund
 
 1.6.0 (2022-10-05)
 ------------------
