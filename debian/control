@@ -1,0 +1,12 @@
+Source: ros-humble-rmf-traffic-editor-assets
+Section: misc
+Priority: optional
+Maintainer: Brandon Ong <brandon@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-rmf-traffic-editor-assets
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, ros-humble-ros-workspace
+Description: Assets for use with traffic_editor.
