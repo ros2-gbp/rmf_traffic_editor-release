@@ -1,0 +1,86 @@
+ros-humble-rmf-traffic-editor-test-maps (1.6.3-1jammy) jammy; urgency=high
+
+
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Mon, 04 Nov 2024 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.6.2-1jammy) jammy; urgency=high
+
+  * Fix gz classic model download (#471 <https://github.com/open-rmf/rmf_traffic_editor/pull/471>)
+  * Contributors: Aaron Chong
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Wed, 09 Aug 2023 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.6.1-1jammy) jammy; urgency=high
+
+  * Switch changelogs to rst format.
+  * Fix test map generation with new commands (#456 <https://github.com/open-rmf/rmf_traffic_editor/pull/456>)
+  * Contributors: Aaron Chong, Yadunund
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Sun, 04 Jun 2023 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.6.0-1jammy) jammy; urgency=high
+
+
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Tue, 04 Oct 2022 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.5.1-1jammy) jammy; urgency=high
+
+
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Tue, 19 Apr 2022 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.5.0-1jammy) jammy; urgency=high
+
+
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Sat, 12 Mar 2022 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.4.0-1jammy) jammy; urgency=high
+
+  * adding maintainer for buildfarm notifications (#368 <https://github.com/open-rmf/rmf_traffic_editor/pull/368>)
+  * Contributors: Marco A. Gutiérrez
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Wed, 01 Sep 2021 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.3.0-1jammy) jammy; urgency=high
+
+  * rename building_map_tools (#310 <https://github.com/open-rmf/rmf_traffic_editor/pull/310>)
+  * Rename packages and delete moved packages (#308 <https://github.com/open-rmf/rmf_traffic_editor/pull/308>)
+  * Contributors: Geoffrey Biggs, youliang
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Thu, 13 May 2021 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.2.0-1jammy) jammy; urgency=high
+
+  * Add first pass of quality declarations for all packages (#235 <https://github.com/osrf/traffic_editor/pull/235>)
+  * Contributors: Geoffrey Biggs, Marco A. Gutiérre
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Mon, 04 Jan 2021 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.1.0-1jammy) jammy; urgency=high
+
+  * Move message call outside of custom command cal #184 <https://github.com/osrf/traffic_editor/pull/184>
+  * Fix/separate model download #183 <https://github.com/osrf/traffic_editor/pull/183>
+  * Using custom commands within if condition due to required OUTPUT or TARGET cmake variable
+  * Invoking model downloading with a separate custom command
+  * Fixing build dependency (#172 <https://github.com/osrf/traffic_editor/pull/172>)
+  * Contributors: Aaron Chong, Luca Della Vedova, Marco A. Gutiérrez
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Wed, 23 Sep 2020 16:00:00 -0000
+
+ros-humble-rmf-traffic-editor-test-maps (1.0.0-1jammy) jammy; urgency=high
+
+  * merging master
+  * Merge pull request #132 <https://github.com/osrf/traffic_editor/pull/132> from methylDragon/ch3/author-namespaced-thumbnails
+    Support Author-namedspaced Thumbnails and Revamp building_map_generator
+  * Fix build and import bug
+  * Merge pull request #100 <https://github.com/osrf/traffic_editor/pull/100> from osrf/double_swing_doors_directions
+    branch on double swing door direction for sim generation
+  * branch on double swing door direction for sim generation
+  * Contributors: Aaron Chong, Morgan Quigley, methylDragon
+
+ -- Morgan Quigley <morgan@openrobotics.org>  Sun, 21 Jun 2020 16:00:00 -0000
+
+
