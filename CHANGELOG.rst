@@ -2,6 +2,11 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.3 (2024-11-05)
+------------------
+* Fix reference file name being kept when loading new building (`#503 <https://github.com/open-rmf/rmf_traffic_editor/pull/503>`_)
+* Contributors: Luca Della Vedova
+
 1.6.2 (2023-08-10)
 ------------------
 
