@@ -498,6 +498,50 @@ bool Level::delete_selected()
   return true;
 }
 
+bool Level::delete_lift_vertex(std::string lift_name)
+{
+  std::vector<int> selected_vertex_idxes;
+  for (int i = 0; i < static_cast<int>(vertices.size()); i++)
+  {
+    if (vertices[i].params.count("lift_cabin"))
+    {
+      if (vertices[i].params["lift_cabin"].value_string == lift_name)
+      {
+        selected_vertex_idxes.push_back(i);
+      }
+    }
+  }
+
+  for (const auto& idx : selected_vertex_idxes)
+  {
+    edges.erase(
+      std::remove_if(
+        edges.begin(),
+        edges.end(),
+        [idx](const Edge& edge)
+        {
+          if (edge.start_idx == idx ||
+          edge.end_idx == idx)
+          {
+            return true;
+          }
+          else
+            return false;
+        }),
+      edges.end());
+
+    for (Edge& edge : edges)
+    {
+      if (edge.start_idx > idx)
+        edge.start_idx--;
+      if (edge.end_idx > idx)
+        edge.end_idx--;
+    }
+    vertices.erase(vertices.begin() + idx);
+  }
+  return true;
+}
+
 void Level::get_selected_items(
   std::vector<Level::SelectedItem>& items)
 {
@@ -1184,6 +1228,7 @@ void Level::draw(
     v.draw(
       scene,
       vertex_radius / drawing_meters_per_pixel,
+      drawing_meters_per_pixel,
       vertex_name_font,
       coordinate_system);
 
@@ -1751,6 +1796,7 @@ void Level::optimize_layer_transforms()
       layers[i].transform.translation().x(),
       layers[i].transform.translation().y()
     };
+    int num_constraints_found = 0;
 
     for (const Constraint& constraint : constraints)
     {
@@ -1820,8 +1866,15 @@ void Level::optimize_layer_transforms()
         &scale,
         &translation[0]);
 
+      ++num_constraints_found;
     }
 
+    // Make sure there were features for this layer, otherwise ceres will fail
+    if (num_constraints_found == 0)
+    {
+      printf("No constraints found for layer, skipping optimization\n");
+      continue;
+    }
     problem.SetParameterLowerBound(&scale, 0, 0.01);
 
     ceres::Solver::Options options;
