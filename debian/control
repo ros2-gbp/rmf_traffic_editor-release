@@ -1,0 +1,12 @@
+Source: ros-jazzy-rmf-traffic-editor
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <morgan@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), libceres-dev, libeigen3-dev, libgoogle-glog-dev, libproj-dev, libqt5concurrent5, libqt5widgets5, libyaml-cpp-dev, qtbase5-dev, ros-jazzy-ament-cmake, ros-jazzy-ament-cmake-uncrustify <!nocheck>, ros-jazzy-ament-index-cpp, ros-jazzy-rmf-utils, ros-jazzy-rmf-utils <!nocheck>, ros-jazzy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-jazzy-rmf-traffic-editor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libceres-dev, libgoogle-glog-dev, libproj-dev, ros-jazzy-ros-workspace
+Description: traffic editor
