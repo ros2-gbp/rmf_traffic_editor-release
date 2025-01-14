@@ -145,8 +145,7 @@ void Lift::draw(
   const bool apply_transformation,
   const double scale,
   const double translate_x,
-  const double translate_y,
-  const double rotation) const
+  const double translate_y) const
 {
   if (elevation > highest_elevation || elevation < lowest_elevation)
     return;
@@ -217,11 +216,8 @@ void Lift::draw(
 
   if (apply_transformation)
   {
-    auto rotated_x = std::cos(-rotation)*x - std::sin(-rotation)*y;
-    auto rotated_y = std::sin(-rotation)*x + std::cos(-rotation)*y;
-    group->setRotation(-180.0 / 3.1415926 * (yaw + rotation));
-    group->setPos(rotated_x * scale + translate_x,
-      rotated_y * scale + translate_y);
+    group->setRotation(-180.0 / 3.1415926 * yaw);
+    group->setPos(x * scale + translate_x, y * scale + translate_y);
   }
 }
 
