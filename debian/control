@@ -1,0 +1,12 @@
+Source: ros-kilted-rmf-traffic-editor
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <morgan@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), libceres-dev, libeigen3-dev, libgoogle-glog-dev, libproj-dev, libqt5concurrent5, libqt5widgets5, libyaml-cpp-dev, qtbase5-dev, ros-kilted-ament-cmake, ros-kilted-ament-cmake-uncrustify <!nocheck>, ros-kilted-ament-index-cpp, ros-kilted-rmf-utils, ros-kilted-rmf-utils <!nocheck>, ros-kilted-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kilted-rmf-traffic-editor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libceres-dev, libgoogle-glog-dev, libproj-dev, ros-kilted-ros-workspace
+Description: traffic editor
