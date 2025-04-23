@@ -2,11 +2,16 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.9.2 (2025-01-14)
-------------------
+1.11.0 (2024-11-27)
+-------------------
+* Fix lift cabin graphics on rotated floor plans (`#513 <https://github.com/open-rmf/rmf_traffic_editor/issues/513>`_)
+* Fix crash when no features are available to calculate a layer transform (`#460 <https://github.com/open-rmf/rmf_traffic_editor/issues/460>`_)
+* Addition of delete button for lift table (`#511 <https://github.com/open-rmf/rmf_traffic_editor/issues/511>`_)
+* Fix reference file name being kept when loading new building (`#501 <https://github.com/open-rmf/rmf_traffic_editor/issues/501>`_)
+* Contributors: Luca Della Vedova, Tan Jun Kiat
 
-1.9.1 (2024-06-15)
-------------------
+1.10.0 (2024-06-12)
+-------------------
 
 1.9.0 (2024-06-01)
 ------------------

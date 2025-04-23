@@ -394,15 +394,13 @@ class Building:
                 nav_graphs[f'{i}'] = g
         return nav_graphs
 
-    def generate_sdf_world(self, template_file, skip_camera_pose):
+    def generate_sdf_world(self):
         """ Return an etree of this Building in SDF starting from a template"""
-        if template_file == "":
-            template_name = 'gz_world.sdf'
-            template_path = os.path.join(
-                get_package_share_directory('rmf_building_map_tools'),
-                f'templates/{template_name}')
-        else:
-            template_path = template_file
+        template_name = 'gz_world.sdf'
+
+        template_path = os.path.join(
+            get_package_share_directory('rmf_building_map_tools'),
+            f'templates/{template_name}')
         tree = parse(template_path)
         sdf = tree.getroot()
 
@@ -474,20 +472,18 @@ class Building:
             crs_ele.text = self.global_transform.crs_name
 
         gui_ele = world.find('gui')
-
-        if not skip_camera_pose:
-            c = self.center()
-            # Transforming camera to account for offsets if
-            # not in reference_image mode and when a floor polygon is defined.
-            if self.global_transform and c != (0, 0):
-                camera_pose = f'{c[0] - self.global_transform.x}  \
-                {c[1]-20 - self.global_transform.y} 10 0 0.6 1.57'
-            else:
-                camera_pose = f'{c[0]} {c[1]-20} 10 0 0.6 1.57'
-            # add floor-toggle GUI plugin parameters
-            plugin_ele = gui_ele.find('.//plugin[@filename="MinimalScene"]')
-            camera_pose_ele = plugin_ele.find('camera_pose')
-            camera_pose_ele.text = camera_pose
+        c = self.center()
+        # Transforming camera to account for offsets if
+        # not in reference_image mode and when a floor polygon is defined.
+        if self.global_transform and c != (0, 0):
+            camera_pose = f'{c[0] - self.global_transform.x}  \
+            {c[1]-20 - self.global_transform.y} 10 0 0.6 1.57'
+        else:
+            camera_pose = f'{c[0]} {c[1]-20} 10 0 0.6 1.57'
+        # add floor-toggle GUI plugin parameters
+        plugin_ele = gui_ele.find('.//plugin[@filename="MinimalScene"]')
+        camera_pose_ele = plugin_ele.find('camera_pose')
+        camera_pose_ele.text = camera_pose
 
         toggle_floors_ele = SubElement(
             gui_ele,

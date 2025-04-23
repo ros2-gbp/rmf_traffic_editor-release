@@ -16,9 +16,7 @@ def main():
         g.generate_sdf(
             args.INPUT,
             args.OUTPUT_WORLD,
-            args.OUTPUT_MODEL_DIR,
-            args.TEMPLATE_WORLD_FILE,
-            args.SKIP_CAMERA_POSE
+            args.OUTPUT_MODEL_DIR
         )
 
     if args.command == "nav":
