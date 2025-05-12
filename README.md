@@ -1,3 +1,30 @@
+## rmf_traffic_editor (rolling) - 1.12.0-1
+
+The packages in the `rmf_traffic_editor` repository were released into the `rolling` distro by running `/usr/bin/bloom-release -r rolling rmf_traffic_editor` on `Mon, 12 May 2025 04:28:06 -0000`
+
+These packages were released:
+- `rmf_building_map_tools`
+- `rmf_traffic_editor`
+- `rmf_traffic_editor_assets`
+- `rmf_traffic_editor_test_maps`
+
+Version of package(s) in repository `rmf_traffic_editor`:
+
+- upstream repository: https://github.com/open-rmf/rmf_traffic_editor.git
+- release repository: https://github.com/ros2-gbp/rmf_traffic_editor-release.git
+- rosdistro version: `1.11.0-1`
+- old version: `1.11.0-1`
+- new version: `1.12.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.12.0`
+- catkin_pkg version: `1.0.0`
+- rosdep version: `0.25.1`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## rmf_traffic_editor (jazzy) - 1.9.2-1
 
 The packages in the `rmf_traffic_editor` repository were released into the `jazzy` distro by running `/usr/bin/bloom-release --rosdistro jazzy rmf_traffic_editor` on `Tue, 14 Jan 2025 17:31:32 -0000`
