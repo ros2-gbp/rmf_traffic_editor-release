@@ -139,7 +139,7 @@ class BuildingMapServer(Node):
 
     def level_msg(self, level):
         msg = Level()
-        msg.name = level.name
+        msg.name = str(level.name)
         msg.elevation = level.elevation
         if level.drawing_name:
             image = AffineImage()
@@ -221,19 +221,19 @@ class BuildingMapServer(Node):
 
                 graph_msg.vertices.append(gn)
 
-            for l in g['lanes']:
+            for lane in g['lanes']:
                 ge = GraphEdge()
-                ge.v1_idx = l[0]
-                ge.v2_idx = l[1]
-                if l[2]['is_bidirectional']:
+                ge.v1_idx = lane[0]
+                ge.v2_idx = lane[1]
+                if lane[2]['is_bidirectional']:
                     ge.edge_type = GraphEdge.EDGE_TYPE_BIDIRECTIONAL
                 else:
                     ge.edge_type = GraphEdge.EDGE_TYPE_UNIDIRECTIONAL
-                if "speed_limit" in l[2]:
+                if "speed_limit" in lane[2]:
                     p = Param()
                     p.name = "speed_limit"
                     p.type = p.TYPE_DOUBLE
-                    p.value_float = float(l[2]["speed_limit"])
+                    p.value_float = float(lane[2]["speed_limit"])
                     ge.params.append(p)
                 graph_msg.edges.append(ge)
             msg.nav_graphs.append(graph_msg)
@@ -278,7 +278,7 @@ class BuildingMapServer(Node):
         # transformation is already done in Lift class
         msg.ref_x, msg.ref_y = lift.x, lift.y
         msg.name = str(lift.name)
-        msg.levels = lift.level_names
+        msg.levels = [str(level_name) for level_name in lift.level_names]
 
         msg.ref_yaw = lift.yaw
         msg.width = lift.width
