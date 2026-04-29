@@ -1,0 +1,12 @@
+Source: ros-lyrical-rmf-traffic-editor-test-maps
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <morgan@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-lyrical-ament-cmake, ros-lyrical-rmf-building-map-tools, ros-lyrical-ros2run, ros-lyrical-ros-workspace
+Homepage: https://index.ros.org/p/rmf_traffic_editor_test_maps/#lyrical
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-rmf-traffic-editor-test-maps
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lyrical-ros-workspace
+Description: Some test maps for traffic_editor and rmf_building_map_tools.
