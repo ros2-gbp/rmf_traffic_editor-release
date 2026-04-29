@@ -1,0 +1,12 @@
+Source: ros-lyrical-rmf-building-map-tools
+Section: misc
+Priority: optional
+Maintainer: Morgan Quigley <mquigley@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), python3-pytest <!nocheck>, ros-lyrical-rmf-building-map-msgs, ros-lyrical-ros-workspace, python3-all, python3-setuptools, dh-python
+Homepage: https://index.ros.org/p/rmf_building_map_tools/#lyrical
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-rmf-building-map-tools
+Architecture: any
+Depends: ${python3:Depends}, ${misc:Depends}, libyaml-cpp-dev, python3-fiona, python3-pyproj, python3-requests, python3-rtree, python3-shapely, python3-yaml, ros-lyrical-ament-index-python, ros-lyrical-gz-fuel-tools-vendor, ros-lyrical-rclpy, ros-lyrical-rmf-building-map-msgs, ros-lyrical-rmf-site-map-msgs, ros-lyrical-std-msgs, sqlite3, ros-lyrical-ros-workspace
+Description: RMF Building map tools
