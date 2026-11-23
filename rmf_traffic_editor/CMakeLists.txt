@@ -74,6 +74,7 @@ set(gui_sources
   gui/map_view.cpp
   gui/model.cpp
   gui/model_dialog.cpp
+  gui/mutex_table.cpp
   gui/param.cpp
   gui/polygon.cpp
   gui/preferences_dialog.cpp
@@ -85,6 +86,9 @@ set(gui_sources
   gui/transform.cpp
   gui/vertex.cpp
   gui/yaml_utils.cpp
+  gui/zone.cpp
+  gui/zone_dialog.cpp
+  gui/zone_table.cpp
 
   #crowd_sim related
   gui/multi_select_combo_box.cpp
