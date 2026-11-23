@@ -31,7 +31,13 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <ament_index_cpp/version.h>
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 14, 0)
+#include "ament_index_cpp/get_package_share_path.hpp"
+#else
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#endif
+
 #include "ament_index_cpp/get_package_prefix.hpp"
 #include "ament_index_cpp/get_resource.hpp"
 
@@ -57,12 +63,13 @@
 #include "lift_table.h"
 #include "map_view.h"
 #include "model_dialog.h"
+#include "mutex_table.h"
 #include "preferences_dialog.h"
 #include "preferences_keys.h"
 #include "traffic_table.h"
 #include "ui_new_building_dialog.h"
 #include "ui_transform_dialog.h"
-
+#include "zone_table.h"
 
 using std::string;
 using std::isnan;
@@ -179,6 +186,12 @@ Editor::Editor()
     &TableList::redraw,
     [this]() { this->create_scene(); });
 
+  zone_table = new ZoneTable;
+  connect(
+    zone_table,
+    &TableList::redraw,
+    [this]() { this->create_scene(); });
+
   traffic_table = new TrafficTable;
   connect(
     traffic_table,
@@ -192,6 +205,29 @@ Editor::Editor()
     {
       rendering_options.active_traffic_map_idx = row;
       traffic_table->update(rendering_options);
+    });
+
+  mutex_table = new MutexTable;
+  connect(
+    mutex_table,
+    &QTableWidget::currentCellChanged,
+    [this](int row, int /*col*/, int prev_row, int /*prev_col*/)
+    {
+      if (row < 0 || row == prev_row)
+        return;
+      mutex_table->set_highlight(row, rendering_options);
+      create_scene();
+    });
+  connect(
+    mutex_table,
+    &QTableWidget::cellClicked,
+    [this](int row, int /*col*/)
+    {
+      // clicks that moved the current row were already handled above
+      if (row != mutex_table->row_before_press())
+        return;
+      mutex_table->toggle_highlight(row, rendering_options);
+      create_scene();
     });
 
   crowd_sim_table = new CrowdSimEditorTable(building);
@@ -210,7 +246,9 @@ Editor::Editor()
   right_tab_widget->addTab(level_table, "levels");
   right_tab_widget->addTab(layer_table, "layers");
   right_tab_widget->addTab(lift_table, "lifts");
+  right_tab_widget->addTab(zone_table, "zones");
   right_tab_widget->addTab(traffic_table, "graphs");
+  right_tab_widget->addTab(mutex_table, "mutexes");
   right_tab_widget->addTab(crowd_sim_table, "crowds");
 
   property_editor = new QTableWidget;
@@ -493,13 +531,28 @@ void Editor::load_model_names()
 
     try
     {
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 14, 0)
+      share_dir =
+        ament_index_cpp::get_package_share_path(
+        "rmf_traffic_editor_assets");
+
+      const auto result = ament_index_cpp::get_resource(
+        "rmf_traffic_editor_assets",
+        "assets");
+      if (result.resourcePath.has_value())
+      {
+        assets_dir = *result.resourcePath;
+      }
+#else
       share_dir =
         ament_index_cpp::get_package_share_directory(
         "rmf_traffic_editor_assets");
 
-      ament_index_cpp::get_resource("rmf_traffic_editor_assets",
+      ament_index_cpp::get_resource(
+        "rmf_traffic_editor_assets",
         "assets",
         assets_dir);
+#endif
     }
     catch (const ament_index_cpp::PackageNotFoundError& e)
     {
@@ -1797,6 +1850,9 @@ bool Editor::create_scene()
 
   building.draw(scene, level_idx, editor_models, rendering_options);
 
+  // refreshed here so edits to "mutex" params are reflected immediately
+  mutex_table->update(building, rendering_options);
+
   return true;
 }
 
@@ -2911,6 +2967,7 @@ void Editor::update_tables()
 {
   level_table->update(building);
   lift_table->update(building);
+  zone_table->update(building);
   traffic_table->update(rendering_options);
   crowd_sim_table->update();
   layer_table->update(building, level_idx, layer_idx);
