@@ -31,7 +31,13 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <ament_index_cpp/version.h>
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 14, 0)
+#include "ament_index_cpp/get_package_share_path.hpp"
+#else
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#endif
+
 #include "ament_index_cpp/get_package_prefix.hpp"
 #include "ament_index_cpp/get_resource.hpp"
 
@@ -57,12 +63,13 @@
 #include "lift_table.h"
 #include "map_view.h"
 #include "model_dialog.h"
+#include "mutex_table.h"
 #include "preferences_dialog.h"
 #include "preferences_keys.h"
 #include "traffic_table.h"
 #include "ui_new_building_dialog.h"
 #include "ui_transform_dialog.h"
-
+#include "zone_table.h"
 
 using std::string;
 using std::isnan;
@@ -179,6 +186,12 @@ Editor::Editor()
     &TableList::redraw,
     [this]() { this->create_scene(); });
 
+  zone_table = new ZoneTable;
+  connect(
+    zone_table,
+    &TableList::redraw,
+    [this]() { this->create_scene(); });
+
   traffic_table = new TrafficTable;
   connect(
     traffic_table,
@@ -192,6 +205,29 @@ Editor::Editor()
     {
       rendering_options.active_traffic_map_idx = row;
       traffic_table->update(rendering_options);
+    });
+
+  mutex_table = new MutexTable;
+  connect(
+    mutex_table,
+    &QTableWidget::currentCellChanged,
+    [this](int row, int /*col*/, int prev_row, int /*prev_col*/)
+    {
+      if (row < 0 || row == prev_row)
+        return;
+      mutex_table->set_highlight(row, rendering_options);
+      create_scene();
+    });
+  connect(
+    mutex_table,
+    &QTableWidget::cellClicked,
+    [this](int row, int /*col*/)
+    {
+      // clicks that moved the current row were already handled above
+      if (row != mutex_table->row_before_press())
+        return;
+      mutex_table->toggle_highlight(row, rendering_options);
+      create_scene();
     });
 
   crowd_sim_table = new CrowdSimEditorTable(building);
@@ -210,10 +246,13 @@ Editor::Editor()
   right_tab_widget->addTab(level_table, "levels");
   right_tab_widget->addTab(layer_table, "layers");
   right_tab_widget->addTab(lift_table, "lifts");
+  right_tab_widget->addTab(zone_table, "zones");
   right_tab_widget->addTab(traffic_table, "graphs");
+  right_tab_widget->addTab(mutex_table, "mutexes");
   right_tab_widget->addTab(crowd_sim_table, "crowds");
 
   property_editor = new QTableWidget;
+  property_editor->viewport()->installEventFilter(this);
   property_editor->setStyleSheet(
     "QTableWidget { background-color: #e0e0e0; color: black; gridline-color: #606060; } QLineEdit { background:white; }");
   property_editor->setMinimumSize(600, 200);
@@ -232,9 +271,24 @@ Editor::Editor()
   property_editor->verticalHeader()->setSectionResizeMode(
     QHeaderView::ResizeToContents);
   property_editor->setAutoFillBackground(true);
+  property_editor->setSelectionBehavior(QAbstractItemView::SelectRows);
   connect(
     property_editor, &QTableWidget::cellChanged,
     this, &Editor::property_editor_cell_changed);
+  connect(
+    property_editor, &QTableWidget::itemSelectionChanged,
+    [this]()
+    {
+      const int row = property_editor->currentRow();
+      if (row < 0)
+      {
+        delete_param_button->setEnabled(false);
+        return;
+      }
+      QTableWidgetItem* item = property_editor->item(row, 0);
+      delete_param_button->setEnabled(
+        item && item->data(Qt::UserRole).toBool());
+    });
 
   QHBoxLayout* param_button_layout = new QHBoxLayout;
 
@@ -477,13 +531,28 @@ void Editor::load_model_names()
 
     try
     {
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 14, 0)
+      share_dir =
+        ament_index_cpp::get_package_share_path(
+        "rmf_traffic_editor_assets");
+
+      const auto result = ament_index_cpp::get_resource(
+        "rmf_traffic_editor_assets",
+        "assets");
+      if (result.resourcePath.has_value())
+      {
+        assets_dir = *result.resourcePath;
+      }
+#else
       share_dir =
         ament_index_cpp::get_package_share_directory(
         "rmf_traffic_editor_assets");
 
-      ament_index_cpp::get_resource("rmf_traffic_editor_assets",
+      ament_index_cpp::get_resource(
+        "rmf_traffic_editor_assets",
         "assets",
         assets_dir);
+#endif
     }
     catch (const ament_index_cpp::PackageNotFoundError& e)
     {
@@ -679,6 +748,24 @@ void Editor::restore_previous_viewport()
     printf("resetting view...\n");
     zoom_reset();
   }
+}
+
+bool Editor::eventFilter(QObject* obj, QEvent* event)
+{
+  if (obj == property_editor->viewport() &&
+    event->type() == QEvent::MouseButtonPress)
+  {
+    QMouseEvent* me = static_cast<QMouseEvent*>(event);
+    QModelIndex idx = property_editor->indexAt(me->pos());
+    if (!idx.isValid())
+    {
+      // clicking the empty space would clear the selection
+      property_editor->clearSelection();
+      property_editor->setCurrentIndex(QModelIndex());
+      delete_param_button->setEnabled(false);
+    }
+  }
+  return QMainWindow::eventFilter(obj, event);
 }
 
 bool Editor::load_previous_building()
@@ -1355,10 +1442,34 @@ void Editor::add_param_button_clicked()
 
 void Editor::delete_param_button_clicked()
 {
-  QMessageBox::about(
-    this,
-    "work in progress",
-    "TODO: something...sorry. For now, hand-edit the YAML.");
+  const int row = property_editor->currentRow();
+  if (row < 0)
+    return;
+
+  QTableWidgetItem* name_item = property_editor->item(row, 0);
+  if (!name_item)
+    return;
+
+  const std::string param_name = name_item->text().toStdString();
+
+  for (size_t i = 0; i < building.levels[level_idx].vertices.size(); i++)
+  {
+    Vertex& v = building.levels[level_idx].vertices[i];
+    if (!v.selected)
+      continue;
+
+    auto it = v.params.find(param_name);
+    if (it != v.params.end())
+    {
+      v.params.erase(it);
+      populate_property_editor(v, i);
+      property_editor->clearSelection(); // prevents itemSelectionChanged re-enabling it
+      delete_param_button->setEnabled(false);
+      setWindowModified(true);
+      create_scene();
+      return;
+    }
+  }
 }
 
 void Editor::layer_edit_button_clicked(const int row_idx)
@@ -1543,11 +1654,15 @@ void Editor::populate_property_editor(const Vertex& vertex, const int index)
       QString::fromStdString(param.first),
       param.second.to_qstring(),
       true);
+    // mark this row as a deletable param so itemSelectionChanged can detect it
+    property_editor->item(row, 0)->setData(Qt::UserRole, true);
     row++;
   }
 
   add_param_button->setEnabled(true);
   add_param_button->setProperty("object_type", QVariant("vertex"));
+  delete_param_button->setProperty("object_type", QVariant("vertex"));
+  // delete_param_button enable state is managed by itemSelectionChanged
 
   property_editor->blockSignals(false);  // re-enable callbacks
 }
@@ -1734,6 +1849,9 @@ bool Editor::create_scene()
   map_view->draw_tiles();
 
   building.draw(scene, level_idx, editor_models, rendering_options);
+
+  // refreshed here so edits to "mutex" params are reflected immediately
+  mutex_table->update(building, rendering_options);
 
   return true;
 }
@@ -2849,6 +2967,7 @@ void Editor::update_tables()
 {
   level_table->update(building);
   lift_table->update(building);
+  zone_table->update(building);
   traffic_table->update(rendering_options);
   crowd_sim_table->update();
   layer_table->update(building, level_idx, layer_idx);
