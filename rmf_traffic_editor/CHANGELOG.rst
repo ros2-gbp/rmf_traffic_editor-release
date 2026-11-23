@@ -2,49 +2,21 @@
 Changelog for package rmf\_traffic\_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.16.0 (2026-11-13)
--------------------
-* Created a mutexes tab to show the combination of mutex groups (`#551 <https://github.com/open-rmf/rmf_traffic_editor/issues/551>`_)
-  Co-authored-by: Grey <mxgrey@intrinsic.ai>
-  Co-authored-by: Aaron Chong <aaronchongth@gmail.com>
-* Zone editing UI and YAML serialization for GoToZone feature (`#544 <https://github.com/open-rmf/rmf_traffic_editor/issues/544>`_)
-  Co-authored-by: Loke Ji Xian <loke_ji_xian@cgh.com.sg>
-  Co-authored-by: Tey Leong Teck <leong_teck_tey@cgh.com.sg>
-  Co-authored-by: kjchee <keai_jiang_chee@cgh.com.sg>
-* suppress tsan warnings from internal qt, glib and debus library (`#553 <https://github.com/open-rmf/rmf_traffic_editor/issues/553>`_)
-  Co-authored-by: Michael X. Grey <mxgrey@intrinsic.ai>
-* Migrate away from get_package_share_directory (`#554 <https://github.com/open-rmf/rmf_traffic_editor/issues/554>`_)
-* Contributors: Chen Bainian, Francesco Fallica, Grey, chart
-
-1.15.0 (2026-09-25)
--------------------
-* Enabled Delete property button to the custom parameters in vertices GUI (`#545 <https://github.com/open-rmf/rmf_traffic_editor/issues/545>`_)
-* Contributors: Francesco Fallica
-
-1.14.0 (2025-07-21)
--------------------
-* Fix bug in angle difference calculation near ±π (`#538 <https://github.com/open-rmf/rmf_traffic_editor/issues/538>`_)
-* Contributors: kj
-
-1.13.0 (2025-06-09)
--------------------
-
-1.12.0 (2025-05-09)
--------------------
+1.9.4 (2026-11-23)
+------------------
 * Add a conditional check for level transformation (`#520 <https://github.com/open-rmf/rmf_traffic_editor/issues/520>`_)
 * Allowing deletion of lift cabin vertices (`#518 <https://github.com/open-rmf/rmf_traffic_editor/issues/518>`_)
-* Contributors: Jun
-
-1.11.0 (2024-11-27)
--------------------
 * Fix lift cabin graphics on rotated floor plans (`#513 <https://github.com/open-rmf/rmf_traffic_editor/issues/513>`_)
 * Fix crash when no features are available to calculate a layer transform (`#460 <https://github.com/open-rmf/rmf_traffic_editor/issues/460>`_)
 * Addition of delete button for lift table (`#511 <https://github.com/open-rmf/rmf_traffic_editor/issues/511>`_)
 * Fix reference file name being kept when loading new building (`#501 <https://github.com/open-rmf/rmf_traffic_editor/issues/501>`_)
-* Contributors: Luca Della Vedova, Tan Jun Kiat
+* Contributors: Jun, Luca Della Vedova, Tan Jun Kiat
 
-1.10.0 (2024-06-12)
--------------------
+1.9.2 (2025-01-14)
+------------------
+
+1.9.1 (2024-06-15)
+------------------
 
 1.9.0 (2024-06-01)
 ------------------

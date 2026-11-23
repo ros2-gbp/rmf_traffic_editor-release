@@ -27,8 +27,6 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QElapsedTimer>
 
-#include <rmf_utils/math.hpp>
-
 #include "building.h"
 #include "yaml_utils.h"
 
@@ -152,18 +150,6 @@ bool Building::load(const string& _filename)
     }
   }
 
-  zones.clear();
-  if (y["zones"] && y["zones"].IsMap())
-  {
-    const YAML::Node& y_zones = y["zones"];
-    for (YAML::const_iterator it = y_zones.begin(); it != y_zones.end(); ++it)
-    {
-      Zone zone;
-      zone.from_yaml(it->first.as<string>(), it->second, levels);
-      zones.push_back(zone);
-    }
-  }
-
   if (y["graphs"] && y["graphs"].IsMap())
   {
     const YAML::Node& g_map = y["graphs"];
@@ -211,12 +197,6 @@ bool Building::save()
     y["lifts"][lift.name] = lift.to_yaml();
   if (lifts.empty())
     y["lifts"].SetStyle(YAML::EmitterStyle::Flow);
-
-  y["zones"] = YAML::Node(YAML::NodeType::Map);
-  for (const auto& zone : zones)
-    y["zones"][zone.name] = zone.to_yaml();
-  if (zones.empty())
-    y["zones"].SetStyle(YAML::EmitterStyle::Flow);
 
   if (crowd_sim_impl)
     y["crowd_sim"] = crowd_sim_impl->to_yaml();
@@ -454,24 +434,6 @@ void Building::draw_lifts(QGraphicsScene* scene, const int level_idx)
   }
 }
 
-void Building::draw_zones(const RenderingOptions& rendering_options,
-  QGraphicsScene* scene, const int level_idx)
-{
-  const Level& level = levels[level_idx];
-  for (const auto& zone : zones)
-  {
-    if (zone.level != level.name)
-      continue;
-
-    zone.draw(
-      scene,
-      level.drawing_meters_per_pixel,
-      level.name,
-      true,
-      level.vertices);
-  }
-}
-
 bool Building::transform_between_levels(
   const std::string& from_level_name,
   const QPointF& from_point,
@@ -586,11 +548,7 @@ Building::Transform Building::compute_transform(
   // it is a crude method for now, but we will just compute the mean of the angles of all the fiducial pairs
   double relative_rotation_sum = 0;
   for (std::size_t i = 0; i < rotations.size(); i++)
-  {
-    // calculate shortest angle diff between two angles
-    double diff = rotations[i].first - rotations[i].second;
-    relative_rotation_sum += rmf_utils::wrap_to_pi(diff);
-  }
+    relative_rotation_sum += rotations[i].first - rotations[i].second;
   const double rotation = relative_rotation_sum / rotations.size();
 
   // calculate the distances between each fiducial on their levels
@@ -826,7 +784,6 @@ void Building::draw(
     coordinate_system);
 
   draw_lifts(scene, level_idx);
-  draw_zones(rendering_options, scene, level_idx);
 }
 
 Polygon* Building::get_selected_polygon(const int level_idx)

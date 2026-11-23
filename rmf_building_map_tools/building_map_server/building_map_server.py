@@ -21,8 +21,6 @@ from rmf_building_map_msgs.msg import Level
 from rmf_building_map_msgs.msg import Graph
 from rmf_building_map_msgs.msg import GraphNode
 from rmf_building_map_msgs.msg import GraphEdge
-from rmf_building_map_msgs.msg import GraphZone
-from rmf_building_map_msgs.msg import ZoneVertex
 from rmf_building_map_msgs.msg import Place
 from rmf_building_map_msgs.msg import AffineImage
 from rmf_building_map_msgs.msg import Door
@@ -195,7 +193,6 @@ class BuildingMapServer(Node):
                 continue  # empty graph :(
             graph_msg = Graph()
             graph_msg.name = str(i)  # todo: someday, string names...
-            zone_vertices = {}
             print(f"graph {i} has {len(g['vertices'])} vertices")
             for v in g['vertices']:
                 gn = self.create_graph_node(v[0], v[1], v[2]['name'])
@@ -203,13 +200,12 @@ class BuildingMapServer(Node):
                 # add specific params to builidng_map_msg
                 for str_param in ["dock_name",
                                   "pickup_dispenser",
-                                  "dropoff_ingestor",
-                                  "mutex"]:
+                                  "dropoff_ingestor"]:
                     if (str_param in v[2]):
                         p = Param()
                         p.name = str_param
                         p.type = p.TYPE_STRING
-                        p.value_string = str(v[2][str_param])
+                        p.value_string = v[2][str_param]
                         gn.params.append(p)
 
                 for bool_param in ["is_charger",
@@ -225,46 +221,21 @@ class BuildingMapServer(Node):
 
                 graph_msg.vertices.append(gn)
 
-                if 'zone' in v[2]:
-                    zv = ZoneVertex()
-                    zv.name = str(v[2]['name'])
-                    zv.group = str(v[2]['group'])
-                    zv.priority = v[2]['priority']
-
-                    zone_name = v[2]['zone']
-                    if zone_name not in zone_vertices:
-                        zone_vertices[zone_name] = []
-
-                    zone_vertices[zone_name].append(zv)
-
-            for lane in g['lanes']:
+            for l in g['lanes']:
                 ge = GraphEdge()
-                ge.v1_idx = lane[0]
-                ge.v2_idx = lane[1]
-                if lane[2].get('is_bidirectional', False):
+                ge.v1_idx = l[0]
+                ge.v2_idx = l[1]
+                if l[2]['is_bidirectional']:
                     ge.edge_type = GraphEdge.EDGE_TYPE_BIDIRECTIONAL
                 else:
                     ge.edge_type = GraphEdge.EDGE_TYPE_UNIDIRECTIONAL
-                if "speed_limit" in lane[2]:
+                if "speed_limit" in l[2]:
                     p = Param()
                     p.name = "speed_limit"
                     p.type = p.TYPE_DOUBLE
-                    p.value_float = float(lane[2]["speed_limit"])
-                    ge.params.append(p)
-                if "mutex" in lane[2]:
-                    p = Param()
-                    p.name = "mutex"
-                    p.type = p.TYPE_STRING
-                    p.value_string = lane[2]["mutex"]
+                    p.value_float = float(l[2]["speed_limit"])
                     ge.params.append(p)
                 graph_msg.edges.append(ge)
-
-            for zone_name, zone_data in level.zones.items():
-                if zone_name not in zone_vertices:
-                    continue  # zone is not reachable from this graph
-                graph_msg.zones.append(
-                    self.zone_msg(zone_data, zone_vertices[zone_name]))
-
             msg.nav_graphs.append(graph_msg)
 
         # Populate the wall graph
@@ -339,20 +310,6 @@ class BuildingMapServer(Node):
             door_msg.motion_range = 1.571
             door_msg.motion_direction = -1
             msg.doors.append(door_msg)
-        return msg
-
-    def zone_msg(self, zone, vertices):
-        msg = GraphZone()
-        # transformation is already done in Zone class
-        msg.center_x, msg.center_y = zone.x, zone.y
-        msg.name = str(zone.name)
-        msg.level = str(zone.level)
-        msg.type = str(zone.type)
-
-        msg.yaw = zone.yaw
-        msg.length = zone.depth
-        msg.width = zone.width
-        msg.vertices = vertices
         return msg
 
     def get_building_map(self, request, response):

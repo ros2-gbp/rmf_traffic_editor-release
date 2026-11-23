@@ -35,7 +35,6 @@ class Level:
         self.vertices = []
         self.transformed_vertices = []  # will be calculated in a later pass
         self.lift_vert_lists = {}  # will be calculated in a later pass
-        self.zones = {}  # will be set by the building in a later pass
         self.meas = []
         self.lanes = []
         self.walls = []
@@ -82,8 +81,6 @@ class Level:
         self.transformed_vertices = []  # will be calculated in a later pass
 
         self.lift_vert_lists = {}  # will be calculated in a later pass
-
-        self.zones = {}  # will be set by the building in a later pass
 
         self.meas = []
         if 'measurements' in yaml_node:
@@ -247,13 +244,12 @@ class Level:
                 model_path,
                 self.transformed_vertices)
 
-    def generate_sdf_models(self, world_ele, model_author_cache: dict):
+    def generate_sdf_models(self, world_ele):
         for model in self.models:
             model.generate(
                 world_ele,
                 self.elevation,
-                self.transform,
-                model_author_cache)
+                self.transform)
 
         # sniff around in our vertices and spawn robots if requested
         for vertex_idx, vertex in enumerate(self.vertices):
@@ -445,16 +441,16 @@ class Level:
         next_idx = 0
         vidx_to_mapped_idx = {}
         mapped_idx_to_vidx = {}
-        for lane in self.lanes:
-            if lane.params['graph_idx'].value != graph_idx:
+        for l in self.lanes:
+            if l.params['graph_idx'].value != graph_idx:
                 continue
-            if lane.start_idx not in vidx_to_mapped_idx:
-                vidx_to_mapped_idx[lane.start_idx] = next_idx
-                mapped_idx_to_vidx[next_idx] = lane.start_idx
+            if l.start_idx not in vidx_to_mapped_idx:
+                vidx_to_mapped_idx[l.start_idx] = next_idx
+                mapped_idx_to_vidx[next_idx] = l.start_idx
                 next_idx += 1
-            if lane.end_idx not in vidx_to_mapped_idx:
-                vidx_to_mapped_idx[lane.end_idx] = next_idx
-                mapped_idx_to_vidx[next_idx] = lane.end_idx
+            if l.end_idx not in vidx_to_mapped_idx:
+                vidx_to_mapped_idx[l.end_idx] = next_idx
+                mapped_idx_to_vidx[next_idx] = l.end_idx
                 next_idx += 1
         # print(vidx_to_mapped_idx)
         # print(mapped_idx_to_vidx)
@@ -474,14 +470,14 @@ class Level:
             nav_data['vertices'].append([v.x, v.y, p])
 
         nav_data['lanes'] = []
-        for lane in self.lanes:
-            if lane.params['graph_idx'].value != graph_idx:
+        for l in self.lanes:
+            if l.params['graph_idx'].value != graph_idx:
                 continue
-            v1 = self.vertices[lane.start_idx]
-            v2 = self.vertices[lane.end_idx]
+            v1 = self.vertices[l.start_idx]
+            v2 = self.vertices[l.end_idx]
 
-            start_idx = vidx_to_mapped_idx[lane.start_idx]
-            end_idx = vidx_to_mapped_idx[lane.end_idx]
+            start_idx = vidx_to_mapped_idx[l.start_idx]
+            end_idx = vidx_to_mapped_idx[l.end_idx]
 
             p = {}  # params
 
@@ -493,26 +489,26 @@ class Level:
                     print(f'found intersection with door {door_name}!')
                     p['door_name'] = door_name
 
-            if lane.orientation():
-                p['orientation_constraint'] = lane.orientation()
+            if l.orientation():
+                p['orientation_constraint'] = l.orientation()
 
-            if 'speed_limit' in lane.params and \
-                    lane.params['speed_limit'].value > 0.0:
-                p['speed_limit'] = lane.params['speed_limit'].value
+            if 'speed_limit' in l.params and \
+                    l.params['speed_limit'].value > 0.0:
+                p['speed_limit'] = l.params['speed_limit'].value
 
-            if 'mutex' in lane.params and \
-                    lane.params['mutex'].value:
-                p['mutex'] = lane.params['mutex'].value
+            if 'mutex' in l.params and \
+                    l.params['mutex'].value:
+                p['mutex'] = l.params['mutex'].value
 
-            if 'demo_mock_floor_name' in lane.params and \
-                    lane.params['demo_mock_floor_name'].value:
+            if 'demo_mock_floor_name' in l.params and \
+                    l.params['demo_mock_floor_name'].value:
                 p['demo_mock_floor_name'] = \
-                    lane.params['demo_mock_floor_name'].value
+                    l.params['demo_mock_floor_name'].value
 
-            if 'demo_mock_lift_name' in lane.params and \
-                    lane.params['demo_mock_lift_name'].value:
+            if 'demo_mock_lift_name' in l.params and \
+                    l.params['demo_mock_lift_name'].value:
                 p['demo_mock_lift_name'] = \
-                    lane.params['demo_mock_lift_name'].value
+                    l.params['demo_mock_lift_name'].value
 
             beginning_dock = None
             end_dock = None
@@ -521,7 +517,7 @@ class Level:
             if 'dock_name' in v1.params:  # lane segment begins at dock
                 beginning_dock = v1.params['dock_name'].value
 
-            if always_unidirectional and lane.is_bidirectional():
+            if always_unidirectional and l.is_bidirectional():
                 # now flip things around and make the second link
                 forward_params = copy.deepcopy(p)
                 backward_params = copy.deepcopy(p)
@@ -536,99 +532,20 @@ class Level:
 
                 nav_data['lanes'].append([start_idx, end_idx, forward_params])
 
-                if lane.orientation():
+                if l.orientation():
                     backward_params['orientation_constraint'] = \
-                        lane.reverse_orientation()
+                        l.reverse_orientation()
                 nav_data['lanes'].append([end_idx, start_idx, backward_params])
             else:
                 # ensure the directionality parameter is set
-                p['is_bidirectional'] = lane.is_bidirectional()
+                p['is_bidirectional'] = l.is_bidirectional()
                 if end_dock:
                     p['dock_name'] = end_dock
                 if beginning_dock:
                     p['undock_name'] = beginning_dock
                 nav_data['lanes'].append([start_idx, end_idx, p])
 
-        if nav_data['lanes']:
-            self.generate_zone_vertices_and_lanes(nav_data, graph_idx)
-
         return nav_data
-
-    def generate_zone_vertices_and_lanes(self, nav_data, graph_idx):
-        """ Append each zone's internal vertices and its derived transition
-        lanes to the nav graph for this level. """
-        num_level_vertices = len(nav_data['vertices'])
-
-        for zone_name, zone in self.zones.items():
-            external_idx = {}
-
-            for ev_name, ev in zone.external_vertices.items():
-                for idx in range(num_level_vertices):
-                    vertex = nav_data['vertices'][idx]
-                    name = vertex[2].get('name', '')
-                    if ev_name and name == ev_name:
-                        external_idx[ev_name] = idx
-                        break
-
-            # the zone is not reachable from this nav graph
-            if not external_idx:
-                continue
-
-            for idx in range(num_level_vertices):
-                vertex = nav_data['vertices'][idx]
-                if zone.contains_point(vertex[0], vertex[1]):
-                    name = vertex[2].get('name', '')
-                    label = name if name else '(unnamed)'
-                    print(
-                        f'WARNING: regular vertex [{label}] at index [{idx}] '
-                        f'in nav graph [{graph_idx}] lies inside zone '
-                        f'[{zone_name}]')
-
-            internal_idx = []
-            for v in zone.internal_vertices.values():
-                x, y = v['location']
-                if not zone.contains_point(x, y):
-                    print(
-                        f'WARNING: zone [{zone_name}] internal vertex '
-                        f'[{v["name"]}] lies outside the zone bounds')
-
-                internal_idx.append(len(nav_data['vertices']))
-                nav_data['vertices'].append([x, y, {
-                    'name': v['name'],
-                    'group': v['group'],
-                    'priority': v['priority'],
-                    'zone': zone_name}])
-
-            entry_lanes = 0
-            exit_lanes = 0
-            for ev_name, ev in zone.external_vertices.items():
-                if ev_name not in external_idx:
-                    continue
-                ev_idx = external_idx[ev_name]
-
-                for iv_idx in internal_idx:
-                    if ev['is_entry_point']:
-                        nav_data['lanes'].append([ev_idx, iv_idx, {
-                            'speed_limit': 0,
-                            'zone': {'name': zone_name,
-                                     'transition_type': 'entry'}}])
-                        entry_lanes += 1
-
-                    if ev['is_exit_point']:
-                        nav_data['lanes'].append([iv_idx, ev_idx, {
-                            'speed_limit': 0,
-                            'zone': {'name': zone_name,
-                                     'transition_type': 'exit'}}])
-                        exit_lanes += 1
-
-            if not entry_lanes:
-                print(
-                    f'WARNING: zone [{zone_name}] has no entry lane in nav '
-                    f'graph [{graph_idx}]')
-            if not exit_lanes:
-                print(
-                    f'WARNING: zone [{zone_name}] has no exit lane in nav '
-                    f'graph [{graph_idx}]')
 
     def edge_heading(self, edge):
         vs_x, vs_y = self.transformed_vertices[edge.start_idx].xy()

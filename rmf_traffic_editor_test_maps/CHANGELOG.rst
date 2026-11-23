@@ -2,31 +2,14 @@
 Changelog for package rmf\_traffic\_editor\_test\_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.16.0 (2026-11-13)
--------------------
-* bump cmake versions (`#552 <https://github.com/open-rmf/rmf_traffic_editor/issues/552>`_)
-* Contributors: Aaron Chong
+1.9.4 (2026-11-23)
+------------------
 
-1.15.0 (2026-09-25)
--------------------
+1.9.2 (2025-01-14)
+------------------
 
-1.14.0 (2025-07-21)
--------------------
-* Download models through Gazebo (`#535 <https://github.com/open-rmf/rmf_traffic_editor/issues/535>`_)
-  Co-authored-by: Grey <mxgrey@intrinsic.ai>
-* Contributors: Luca Della Vedova
-
-1.13.0 (2025-06-09)
--------------------
-
-1.12.0 (2025-05-09)
--------------------
-
-1.11.0 (2024-11-27)
--------------------
-
-1.10.0 (2024-06-12)
--------------------
+1.9.1 (2024-06-15)
+------------------
 
 1.9.0 (2024-06-01)
 ------------------

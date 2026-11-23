@@ -2,50 +2,22 @@
 Changelog for package rmf\_building\_map\_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.16.0 (2026-11-13)
--------------------
-* lint
-* Zone editing UI and YAML serialization for GoToZone feature (`#544 <https://github.com/open-rmf/rmf_traffic_editor/issues/544>`_)
-  Co-authored-by: Loke Ji Xian <loke_ji_xian@cgh.com.sg>
-  Co-authored-by: Tey Leong Teck <leong_teck_tey@cgh.com.sg>
-  Co-authored-by: kjchee <keai_jiang_chee@cgh.com.sg>
-* Contributors: Aaron Chong, chart
-
-1.15.0 (2026-09-25)
--------------------
-* applied explicit conversion to string for str_param in dock_name, pickup_dispenser, dropoff_ingestor, and mutex. (`#547 <https://github.com/open-rmf/rmf_traffic_editor/issues/547>`_)
-* Change template to be compatible with both Kilted and Jazzy (`#542 <https://github.com/open-rmf/rmf_traffic_editor/issues/542>`_)
-* Contributors: Francesco Fallica, Luca Della Vedova
-
-1.14.0 (2025-07-21)
--------------------
-* Download models through Gazebo (`#535 <https://github.com/open-rmf/rmf_traffic_editor/issues/535>`_)
-  Co-authored-by: Grey <mxgrey@intrinsic.ai>
-* Contributors: Luca Della Vedova
-
-1.13.0 (2025-06-09)
--------------------
-* Adding "mutex" to vertex and lane param (`#533 <https://github.com/open-rmf/rmf_traffic_editor/issues/533>`_)
-* Use a world plugin for charger registration (`#532 <https://github.com/open-rmf/rmf_traffic_editor/issues/532>`_)
-* Contributors: Jun, Luca Della Vedova
-
-1.12.0 (2025-05-09)
--------------------
-* Remove redundant physics plugin (`#530 <https://github.com/open-rmf/rmf_traffic_editor/issues/530>`_)
+1.9.4 (2026-11-23)
+------------------
 * Fix to Allow Numerically-Labelled Map (`#528 <https://github.com/open-rmf/rmf_traffic_editor/issues/528>`_)
 * Fix pit crew missing models and authorship logic (`#522 <https://github.com/open-rmf/rmf_traffic_editor/issues/522>`_)
 * Support robot types with organization namespaces (`#521 <https://github.com/open-rmf/rmf_traffic_editor/issues/521>`_)
-* Add flag to skip calculating and setting camera pose (`#523 <https://github.com/open-rmf/rmf_traffic_editor/issues/523>`_)
-* Add the ability to customize the base world file (`#519 <https://github.com/open-rmf/rmf_traffic_editor/issues/519>`_)
-* Contributors: Aaron Chong, Arjo Chakravarty, Gary Bey, Grey, Luca Della Vedova
-
-1.11.0 (2024-11-27)
--------------------
 * Fix startup error when waypoint's name is pure numbers (`#508 <https://github.com/open-rmf/rmf_traffic_editor/pull/508>`_)
-* Contributors: Gary Bey
+* Contributors: Gary Bey, Luca Della Vedova
 
-1.10.0 (2024-06-12)
--------------------
+1.9.2 (2025-01-14)
+------------------
+* Add flag to skip calculating and setting camera pose (`#523 <https://github.com/open-rmf/rmf_traffic_editor//issues/523>`_)
+* Add the ability to customize the base world file (`#519 <https://github.com/open-rmf/rmf_traffic_editor//issues/519>`_)
+* Contributors: Aaron Chong, Arjo Chakravarty
+
+1.9.1 (2024-06-15)
+------------------
 
 1.9.0 (2024-06-01)
 ------------------

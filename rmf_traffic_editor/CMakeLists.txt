@@ -12,7 +12,6 @@ find_package(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Concurrent Test Network REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(rmf_utils REQUIRED)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 # set(CMAKE_VERBOSE_MAKEFILE TRUE)
@@ -74,7 +73,6 @@ set(gui_sources
   gui/map_view.cpp
   gui/model.cpp
   gui/model_dialog.cpp
-  gui/mutex_table.cpp
   gui/param.cpp
   gui/polygon.cpp
   gui/preferences_dialog.cpp
@@ -86,9 +84,6 @@ set(gui_sources
   gui/transform.cpp
   gui/vertex.cpp
   gui/yaml_utils.cpp
-  gui/zone.cpp
-  gui/zone_dialog.cpp
-  gui/zone_table.cpp
 
   #crowd_sim related
   gui/multi_select_combo_box.cpp
@@ -128,7 +123,6 @@ target_link_libraries(
   Qt5::Network
   proj
   yaml-cpp
-  rmf_utils::rmf_utils
   ${ament_index_cpp_LIBRARIES}
 )
 
@@ -161,6 +155,7 @@ install(
 
 if (BUILD_TESTING)
   find_package(ament_cmake_uncrustify REQUIRED)
+  find_package(rmf_utils REQUIRED)
 
   add_subdirectory(test)
 
